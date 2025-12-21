@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bump - Chat App</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="theme-color" content="#7C3AED">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+    <!-- Auth Container - Instagram-Style Layout -->
+    <div id="auth-container" class="auth-container">
+        <!-- Left Side - Phone Mockups -->
+        <div class="auth-left">
+            <div class="phone-mockup">
+                <div class="phone-frame">
+                    <div class="phone-screen">
+                        <div class="mockup-header">
+                            <div class="mockup-avatar"></div>
+                            <div class="mockup-name">
+                                <div class="name-bar"></div>
+                                <div class="status-bar online"></div>
+                            </div>
+                        </div>
+                        <div class="mockup-messages">
+                            <div class="mockup-msg received">
+                                <div class="msg-bubble"></div>
+                            </div>
+                            <div class="mockup-msg sent">
+                                <div class="msg-bubble"></div>
+                            </div>
+                            <div class="mockup-msg received">
+                                <div class="msg-bubble long"></div>
+                            </div>
+                            <div class="mockup-msg sent">
+                                <div class="msg-bubble"></div>
+                            </div>
+                            <div class="mockup-msg received">
+                                <div class="msg-bubble short"></div>
+                            </div>
+                        </div>
+                        <div class="mockup-input">
+                            <div class="input-bar"></div>
+                            <div class="send-circle"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="floating-elements">
+                    <div class="float-emoji e1">💬</div>
+                    <div class="float-emoji e2">⚡</div>
+                    <div class="float-emoji e3">❤️</div>
+                    <div class="float-emoji e4">🔥</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Side - Auth Forms -->
+        <div class="auth-right">
+            <div class="auth-card">
+                <!-- Logo -->
+                <div class="auth-logo">
+                    <i class="fas fa-bolt"></i>
+                    <span>Bump</span>
+                </div>
+                
+                <!-- Login Form -->
+                <form id="login-form" class="auth-form active">
+                    <p class="auth-subtitle">Sign in to continue chatting</p>
+                    
+                    <div class="form-group">
+                        <div class="input-wrapper">
+                            <input type="text" id="login-username" placeholder="Username or email" required autocomplete="username">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-wrapper">
+                            <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <span>Log In</span>
+                    </button>
+                    
+                    <div class="divider">
+                        <span>OR</span>
+                    </div>
+                    
+                    <p class="auth-switch">Don't have an account? <a href="#" id="show-signup">Sign up</a></p>
+                </form>
+                
+                <!-- Signup Form -->
+                <form id="signup-form" class="auth-form">
+                    <p class="auth-subtitle">Sign up to start chatting</p>
+                    
+                    <div class="form-group">
+                        <div class="input-wrapper">
+                            <input type="text" id="signup-fullname" placeholder="Full Name" required autocomplete="name">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-wrapper">
+                            <input type="text" id="signup-username" placeholder="Username" required autocomplete="username">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-wrapper">
+                            <input type="email" id="signup-email" placeholder="Email" required autocomplete="email">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-wrapper">
+                            <input type="password" id="signup-password" placeholder="Password (min 6 characters)" required autocomplete="new-password" minlength="6">
+                        </div>
+                    </div>
+                    
+                    <!-- Avatar Selection -->
+                    <div class="avatar-selection">
+                        <p class="avatar-label">Choose your avatar style</p>
+                        <div class="avatar-types">
+                            <button type="button" class="avatar-type-btn active" data-style="avataaars">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=default" alt="Style 1">
+                            </button>
+                            <button type="button" class="avatar-type-btn" data-style="adventurer">
+                                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=default" alt="Style 2">
+                            </button>
+                            <button type="button" class="avatar-type-btn" data-style="big-smile">
+                                <img src="https://api.dicebear.com/7.x/big-smile/svg?seed=default" alt="Style 3">
+                            </button>
+                            <button type="button" class="avatar-type-btn" data-style="lorelei">
+                                <img src="https://api.dicebear.com/7.x/lorelei/svg?seed=default" alt="Style 4">
+                            </button>
+                            <button type="button" class="avatar-type-btn" data-style="notionists">
+                                <img src="https://api.dicebear.com/7.x/notionists/svg?seed=default" alt="Style 5">
+                            </button>
+                            <button type="button" class="avatar-type-btn" data-style="personas">
+                                <img src="https://api.dicebear.com/7.x/personas/svg?seed=default" alt="Style 6">
+                            </button>
+                        </div>
+                        <input type="hidden" id="selected-avatar-style" value="avataaars">
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">
+                        <span>Sign Up</span>
+                    </button>
+                    
+                    <p class="terms-text">
+                        By signing up, you agree to our Terms and Privacy Policy
+                    </p>
+                    
+                    <div class="divider">
+                        <span>OR</span>
+                    </div>
+                    
+                    <p class="auth-switch">Have an account? <a href="#" id="show-login">Log in</a></p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app-container" class="app-container hidden">
+        <!-- Navigation Rail -->
+        <nav class="nav-rail">
+            <div class="nav-logo">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <div class="nav-items">
+                <button class="nav-item active" data-view="chats" title="Chats">
+                    <i class="fas fa-comment-dots"></i>
+                    <span class="nav-label">Chats</span>
+                    <span class="nav-badge hidden" id="unread-badge">0</span>
+                </button>
+                <button class="nav-item" data-view="search" title="Search">
+                    <i class="fas fa-search"></i>
+                    <span class="nav-label">Search</span>
+                </button>
+                <button class="nav-item" data-view="profile" title="Profile">
+                    <i class="fas fa-user"></i>
+                    <span class="nav-label">Profile</span>
+                </button>
+                <button class="nav-item" data-view="settings" title="Settings">
+                    <i class="fas fa-cog"></i>
+                    <span class="nav-label">Settings</span>
+                </button>
+            </div>
+            <div class="nav-bottom">
+                <button class="nav-item" id="logout-btn" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="nav-label">Logout</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Mobile Bottom Navigation -->
+        <nav class="mobile-nav">
+            <button class="mobile-nav-item active" data-view="chats">
+                <i class="fas fa-comment-dots"></i>
+                <span>Chats</span>
+            </button>
+            <button class="mobile-nav-item" data-view="search">
+                <i class="fas fa-search"></i>
+                <span>Search</span>
+            </button>
+            <button class="mobile-nav-item" data-view="profile">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </button>
+            <button class="mobile-nav-item" data-view="settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </button>
+        </nav>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Chats Sidebar -->
+            <div id="chats-sidebar" class="sidebar-content active">
+                <div class="sidebar-header">
+                    <h2>Chats</h2>
+                    <button class="btn-icon" id="new-chat-btn" title="New Chat">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div class="sidebar-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="chat-search" placeholder="Search chats...">
+                </div>
+                <div class="chat-list" id="chat-list">
+                    <!-- Chat items will be dynamically added -->
+                </div>
+            </div>
+
+            <!-- Search Sidebar -->
+            <div id="search-sidebar" class="sidebar-content">
+                <div class="sidebar-header">
+                    <h2>Search Users</h2>
+                </div>
+                <div class="sidebar-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="user-search" placeholder="Search by username...">
+                </div>
+                <div class="search-results" id="search-results">
+                    <!-- Search results will be dynamically added -->
+                </div>
+            </div>
+
+            <!-- Profile Sidebar -->
+            <div id="profile-sidebar" class="sidebar-content">
+                <div class="sidebar-header">
+                    <h2>My Profile</h2>
+                </div>
+                <div class="profile-view">
+                    <div class="profile-avatar-large">
+                        <img id="my-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default" alt="My Avatar">
+                        <button class="btn-icon avatar-edit" id="change-avatar-btn">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-field">
+                            <label>Full Name</label>
+                            <input type="text" id="profile-fullname" class="profile-input">
+                        </div>
+                        <div class="profile-field">
+                            <label>Username</label>
+                            <input type="text" id="profile-username" class="profile-input" disabled>
+                        </div>
+                        <div class="profile-field">
+                            <label>Email</label>
+                            <input type="email" id="profile-email" class="profile-input">
+                        </div>
+                        <div class="profile-field">
+                            <label>Bio</label>
+                            <textarea id="profile-bio" class="profile-input" placeholder="Write something about yourself..."></textarea>
+                        </div>
+                        <div class="profile-field">
+                            <label>Status</label>
+                            <select id="profile-status" class="profile-input">
+                                <option value="online">🟢 Online</option>
+                                <option value="away">🟡 Away</option>
+                                <option value="busy">🔴 Busy</option>
+                                <option value="offline">⚫ Offline</option>
+                            </select>
+                        </div>
+                        <button class="btn-primary" id="save-profile-btn">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Sidebar -->
+            <div id="settings-sidebar" class="sidebar-content">
+                <div class="sidebar-header">
+                    <h2>Settings</h2>
+                </div>
+                <div class="settings-view">
+                    <div class="settings-section">
+                        <h3>Notifications</h3>
+                        <div class="settings-item">
+                            <div class="settings-item-info">
+                                <i class="fas fa-bell"></i>
+                                <span>Push Notifications</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="notifications-toggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="settings-item">
+                            <div class="settings-item-info">
+                                <i class="fas fa-volume-up"></i>
+                                <span>Message Sounds</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="sounds-toggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="settings-item sound-type-item">
+                            <div class="settings-item-info">
+                                <i class="fas fa-music"></i>
+                                <span>Sound Type</span>
+                            </div>
+                            <select id="sound-type-select" class="settings-select">
+                                <option value="pop">Pop</option>
+                                <option value="ding">Ding</option>
+                                <option value="chime">Chime</option>
+                                <option value="bubble">Bubble</option>
+                            </select>
+                        </div>
+                        <div class="settings-item">
+                            <button class="test-sound-btn" id="test-sound-btn">
+                                <i class="fas fa-play"></i>
+                                <span>Test Sound</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3>Privacy</h3>
+                        <div class="settings-item">
+                            <div class="settings-item-info">
+                                <i class="fas fa-eye"></i>
+                                <span>Show Online Status</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="online-status-toggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="settings-item">
+                            <div class="settings-item-info">
+                                <i class="fas fa-check-double"></i>
+                                <span>Read Receipts</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="read-receipts-toggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3>Chat Appearance</h3>
+                        <div class="settings-item">
+                            <div class="settings-item-info">
+                                <i class="fas fa-comment"></i>
+                                <span>Bubble Style</span>
+                            </div>
+                            <select id="bubble-style-select" class="settings-select">
+                                <option value="snapchat">Snapchat</option>
+                                <option value="discord">Discord</option>
+                                <option value="rounded">Rounded Bubbles</option>
+                                <option value="ios">iOS iMessage</option>
+                                <option value="minimal">Minimal</option>
+                                <option value="modern">Modern</option>
+                            </select>
+                        </div>
+                        <div class="settings-item">
+                            <div class="settings-item-info">
+                                <i class="fas fa-palette"></i>
+                                <span>Chat Background</span>
+                            </div>
+                            <select id="chat-bg-select" class="settings-select">
+                                <option value="default">Default Dark</option>
+                                <option value="darker">Darker</option>
+                                <option value="gradient">Gradient</option>
+                                <option value="pattern">Pattern</option>
+                                <option value="midnight">Midnight Blue</option>
+                                <option value="forest">Forest Green</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3>Avatar Style</h3>
+                        <div class="settings-avatar-grid" id="settings-avatar-grid">
+                            <button type="button" class="avatar-style-btn" data-style="avataaars">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=me" alt="Avataaars">
+                            </button>
+                            <button type="button" class="avatar-style-btn" data-style="adventurer">
+                                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=me" alt="Adventurer">
+                            </button>
+                            <button type="button" class="avatar-style-btn" data-style="big-smile">
+                                <img src="https://api.dicebear.com/7.x/big-smile/svg?seed=me" alt="Big Smile">
+                            </button>
+                            <button type="button" class="avatar-style-btn" data-style="lorelei">
+                                <img src="https://api.dicebear.com/7.x/lorelei/svg?seed=me" alt="Lorelei">
+                            </button>
+                            <button type="button" class="avatar-style-btn" data-style="notionists">
+                                <img src="https://api.dicebear.com/7.x/notionists/svg?seed=me" alt="Notionists">
+                            </button>
+                            <button type="button" class="avatar-style-btn" data-style="personas">
+                                <img src="https://api.dicebear.com/7.x/personas/svg?seed=me" alt="Personas">
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3>About</h3>
+                        <div class="settings-item clickable" id="about-app">
+                            <div class="settings-item-info">
+                                <i class="fas fa-info-circle"></i>
+                                <span>About Bump</span>
+                            </div>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                        <div class="settings-item">
+                            <div class="settings-item-info">
+                                <i class="fas fa-code-branch"></i>
+                                <span>Version</span>
+                            </div>
+                            <span class="settings-value">1.0.0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3>Account</h3>
+                        <button class="btn-danger" id="logout-settings-btn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Chat Window -->
+        <main class="chat-window">
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h2>Welcome to Bump!</h2>
+                <p>Select a chat or search for users to start messaging</p>
+            </div>
+
+            <!-- Chat View -->
+            <div id="chat-view" class="chat-view hidden">
+                <div class="chat-header">
+                    <button class="btn-icon mobile-back-btn" id="mobile-back-btn">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div class="chat-user-info">
+                        <img id="chat-avatar" src="" alt="User Avatar" class="chat-avatar">
+                        <div class="chat-user-details">
+                            <h3 id="chat-username"></h3>
+                            <span id="chat-status" class="user-status"></span>
+                        </div>
+                    </div>
+                    <div class="chat-actions">
+                        <button class="btn-icon" id="view-profile-btn" title="View Profile">
+                            <i class="fas fa-user"></i>
+                        </button>
+                        <button class="btn-icon" id="more-options-btn" title="More Options">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Messages will be dynamically added -->
+                </div>
+                <div class="chat-input-container">
+                    <div class="input-actions-left">
+                        <button class="btn-icon" id="attach-btn" title="Attach File">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <button class="btn-icon" id="camera-btn" title="Take Photo">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    </div>
+                    <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
+                    <div class="input-actions-right">
+                        <button class="btn-icon" id="voice-btn" title="Voice Note">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button class="btn-icon btn-send" id="send-btn" title="Send">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- Hidden file inputs -->
+                <input type="file" id="file-input" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.zip" multiple hidden>
+                <input type="file" id="camera-input" accept="image/*" capture="environment" hidden>
+            </div>
+        </main>
+
+        <!-- Profile Panel (Right Sidebar) -->
+        <aside class="profile-panel hidden" id="profile-panel">
+            <div class="panel-header">
+                <button class="btn-icon" id="close-panel-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h3>User Profile</h3>
+            </div>
+            <div class="panel-content">
+                <div class="panel-avatar">
+                    <img id="panel-avatar-img" src="" alt="User Avatar">
+                </div>
+                <h2 id="panel-fullname"></h2>
+                <p class="panel-username" id="panel-username"></p>
+                <span class="panel-status" id="panel-status"></span>
+                <div class="panel-bio" id="panel-bio"></div>
+                <div class="panel-actions">
+                    <button class="btn-primary" id="panel-message-btn">
+                        <i class="fas fa-comment"></i> Send Message
+                    </button>
+                </div>
+                <div class="panel-info">
+                    <div class="info-item">
+                        <i class="fas fa-envelope"></i>
+                        <span id="panel-email"></span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-calendar"></i>
+                        <span id="panel-joined"></span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- New Chat Modal -->
+    <div class="modal hidden" id="new-chat-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Start New Chat</h3>
+                <button class="btn-icon modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="sidebar-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="new-chat-search" placeholder="Search users...">
+                </div>
+                <div class="user-list" id="new-chat-user-list">
+                    <!-- Users will be dynamically added -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Modal -->
+    <div class="modal hidden" id="about-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>About Bump</h3>
+                <button class="btn-icon modal-close" id="close-about-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body about-body">
+                <div class="about-logo">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h2>Bump</h2>
+                <p class="about-version">Version 1.0.0</p>
+                <p class="about-desc">A modern real-time chat application inspired by WhatsApp, Discord, and Telegram.</p>
+                <div class="about-features">
+                    <p>✨ Real-time messaging</p>
+                    <p>👤 User profiles</p>
+                    <p>🔍 User search</p>
+                    <p>📱 Mobile friendly</p>
+                    <p>🔔 Push notifications</p>
+                </div>
+                <p class="about-copyright">© 2025 Bump Chat</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Avatar Picker Modal -->
+    <div class="modal hidden" id="avatar-picker-modal">
+        <div class="modal-content avatar-modal-content">
+            <div class="modal-header">
+                <h3>Choose Your Avatar</h3>
+                <button class="btn-icon modal-close" id="close-avatar-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="avatar-preview-section">
+                    <img id="avatar-preview" src="" alt="Avatar Preview" class="avatar-preview-img">
+                    <button class="btn-secondary" id="randomize-avatar-btn">
+                        <i class="fas fa-random"></i> Randomize
+                    </button>
+                </div>
+                <p class="avatar-style-label">Select Style</p>
+                <div class="avatar-picker-grid" id="avatar-picker-grid">
+                    <button type="button" class="avatar-picker-btn" data-style="avataaars">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=picker1" alt="Avataaars">
+                        <span>Avataaars</span>
+                    </button>
+                    <button type="button" class="avatar-picker-btn" data-style="adventurer">
+                        <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=picker1" alt="Adventurer">
+                        <span>Adventurer</span>
+                    </button>
+                    <button type="button" class="avatar-picker-btn" data-style="big-smile">
+                        <img src="https://api.dicebear.com/7.x/big-smile/svg?seed=picker1" alt="Big Smile">
+                        <span>Big Smile</span>
+                    </button>
+                    <button type="button" class="avatar-picker-btn" data-style="lorelei">
+                        <img src="https://api.dicebear.com/7.x/lorelei/svg?seed=picker1" alt="Lorelei">
+                        <span>Lorelei</span>
+                    </button>
+                    <button type="button" class="avatar-picker-btn" data-style="notionists">
+                        <img src="https://api.dicebear.com/7.x/notionists/svg?seed=picker1" alt="Notionists">
+                        <span>Notionists</span>
+                    </button>
+                    <button type="button" class="avatar-picker-btn" data-style="personas">
+                        <img src="https://api.dicebear.com/7.x/personas/svg?seed=picker1" alt="Personas">
+                        <span>Personas</span>
+                    </button>
+                    <button type="button" class="avatar-picker-btn" data-style="pixel-art">
+                        <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=picker1" alt="Pixel Art">
+                        <span>Pixel Art</span>
+                    </button>
+                    <button type="button" class="avatar-picker-btn" data-style="thumbs">
+                        <img src="https://api.dicebear.com/7.x/thumbs/svg?seed=picker1" alt="Thumbs">
+                        <span>Thumbs</span>
+                    </button>
+                    <button type="button" class="avatar-picker-btn" data-style="fun-emoji">
+                        <img src="https://api.dicebear.com/7.x/fun-emoji/svg?seed=picker1" alt="Fun Emoji">
+                        <span>Fun Emoji</span>
+                    </button>
+                    <button type="button" class="avatar-picker-btn" data-style="bottts">
+                        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=picker1" alt="Robots">
+                        <span>Robots</span>
+                    </button>
+                    <button type="button" class="avatar-picker-btn" data-style="micah">
+                        <img src="https://api.dicebear.com/7.x/micah/svg?seed=picker1" alt="Micah">
+                        <span>Micah</span>
+                    </button>
+                    <button type="button" class="avatar-picker-btn" data-style="open-peeps">
+                        <img src="https://api.dicebear.com/7.x/open-peeps/svg?seed=picker1" alt="Open Peeps">
+                        <span>Open Peeps</span>
+                    </button>
+                </div>
+                <button class="btn-primary" id="save-avatar-btn">
+                    <i class="fas fa-check"></i> Save Avatar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Sound -->
+    <audio id="notification-sound" preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Socket.io Client -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
