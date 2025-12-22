@@ -78,12 +78,16 @@ function loadDatabase() {
     try {
         if (fs.existsSync(DATA_FILE)) {
             const data = fs.readFileSync(DATA_FILE, 'utf8');
-            return JSON.parse(data);
+            const parsed = JSON.parse(data);
+            // Ensure friendRequests and friends arrays exist
+            if (!parsed.friendRequests) parsed.friendRequests = [];
+            if (!parsed.friends) parsed.friends = [];
+            return parsed;
         }
     } catch (error) {
         console.error('Error loading database:', error);
     }
-    return { users: [], messages: {}, conversations: {} };
+    return { users: [], messages: {}, conversations: {}, friendRequests: [], friends: [] };
 }
 
 function saveDatabase(data) {
@@ -268,6 +272,189 @@ app.put('/api/users/:id', (req, res) => {
     res.json(sanitizeUser(db.users[userIndex]));
 });
 
+// ========================================
+// FRIEND REQUEST SYSTEM (Like Snapchat)
+// ========================================
+
+// Send friend request
+app.post('/api/friends/request', (req, res) => {
+    const { fromUserId, toUserId } = req.body;
+    
+    if (!fromUserId || !toUserId) {
+        return res.status(400).json({ error: 'Both user IDs required' });
+    }
+    
+    if (fromUserId === toUserId) {
+        return res.status(400).json({ error: 'Cannot add yourself' });
+    }
+    
+    // Check if already friends
+    const existingFriend = db.friends?.find(f => 
+        (f.user1 === fromUserId && f.user2 === toUserId) ||
+        (f.user1 === toUserId && f.user2 === fromUserId)
+    );
+    if (existingFriend) {
+        return res.status(400).json({ error: 'Already friends' });
+    }
+    
+    // Check if request already exists
+    const existingRequest = db.friendRequests?.find(r => 
+        (r.from === fromUserId && r.to === toUserId) ||
+        (r.from === toUserId && r.to === fromUserId)
+    );
+    if (existingRequest) {
+        return res.status(400).json({ error: 'Request already pending' });
+    }
+    
+    const request = {
+        id: uuidv4(),
+        from: fromUserId,
+        to: toUserId,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+    };
+    
+    if (!db.friendRequests) db.friendRequests = [];
+    db.friendRequests.push(request);
+    saveDatabase(db);
+    
+    // Notify recipient via socket
+    const toSocketId = userSockets.get(toUserId);
+    if (toSocketId) {
+        const fromUser = db.users.find(u => u.id === fromUserId);
+        io.to(toSocketId).emit('friend_request_received', {
+            request,
+            fromUser: fromUser ? sanitizeUser(fromUser) : null
+        });
+    }
+    
+    res.json({ success: true, request });
+});
+
+// Get pending friend requests for a user
+app.get('/api/friends/requests/:userId', (req, res) => {
+    const userId = req.params.userId;
+    const requests = (db.friendRequests || []).filter(r => r.to === userId && r.status === 'pending');
+    
+    // Attach user info
+    const requestsWithUsers = requests.map(r => ({
+        ...r,
+        fromUser: sanitizeUser(db.users.find(u => u.id === r.from))
+    }));
+    
+    res.json(requestsWithUsers);
+});
+
+// Get sent friend requests
+app.get('/api/friends/sent/:userId', (req, res) => {
+    const userId = req.params.userId;
+    const requests = (db.friendRequests || []).filter(r => r.from === userId && r.status === 'pending');
+    
+    const requestsWithUsers = requests.map(r => ({
+        ...r,
+        toUser: sanitizeUser(db.users.find(u => u.id === r.to))
+    }));
+    
+    res.json(requestsWithUsers);
+});
+
+// Accept friend request
+app.post('/api/friends/accept', (req, res) => {
+    const { requestId, userId } = req.body;
+    
+    const requestIndex = db.friendRequests?.findIndex(r => r.id === requestId && r.to === userId);
+    if (requestIndex === -1 || requestIndex === undefined) {
+        return res.status(404).json({ error: 'Request not found' });
+    }
+    
+    const request = db.friendRequests[requestIndex];
+    request.status = 'accepted';
+    
+    // Add to friends
+    if (!db.friends) db.friends = [];
+    db.friends.push({
+        id: uuidv4(),
+        user1: request.from,
+        user2: request.to,
+        createdAt: new Date().toISOString()
+    });
+    
+    // Remove the request
+    db.friendRequests.splice(requestIndex, 1);
+    saveDatabase(db);
+    
+    // Notify sender via socket
+    const senderSocketId = userSockets.get(request.from);
+    if (senderSocketId) {
+        const acceptedByUser = db.users.find(u => u.id === userId);
+        io.to(senderSocketId).emit('friend_request_accepted', {
+            user: acceptedByUser ? sanitizeUser(acceptedByUser) : null
+        });
+    }
+    
+    res.json({ success: true });
+});
+
+// Reject friend request
+app.post('/api/friends/reject', (req, res) => {
+    const { requestId, userId } = req.body;
+    
+    const requestIndex = db.friendRequests?.findIndex(r => r.id === requestId && r.to === userId);
+    if (requestIndex === -1 || requestIndex === undefined) {
+        return res.status(404).json({ error: 'Request not found' });
+    }
+    
+    db.friendRequests.splice(requestIndex, 1);
+    saveDatabase(db);
+    
+    res.json({ success: true });
+});
+
+// Get friends list for a user
+app.get('/api/friends/:userId', (req, res) => {
+    const userId = req.params.userId;
+    const friendships = (db.friends || []).filter(f => f.user1 === userId || f.user2 === userId);
+    
+    const friends = friendships.map(f => {
+        const friendId = f.user1 === userId ? f.user2 : f.user1;
+        return sanitizeUser(db.users.find(u => u.id === friendId));
+    }).filter(Boolean);
+    
+    res.json(friends);
+});
+
+// Check friendship status between two users
+app.get('/api/friends/status/:userId/:otherUserId', (req, res) => {
+    const { userId, otherUserId } = req.params;
+    
+    // Check if friends
+    const isFriend = (db.friends || []).some(f => 
+        (f.user1 === userId && f.user2 === otherUserId) ||
+        (f.user1 === otherUserId && f.user2 === userId)
+    );
+    
+    if (isFriend) {
+        return res.json({ status: 'friends' });
+    }
+    
+    // Check pending requests
+    const sentRequest = (db.friendRequests || []).find(r => 
+        r.from === userId && r.to === otherUserId && r.status === 'pending'
+    );
+    if (sentRequest) {
+        return res.json({ status: 'request_sent', requestId: sentRequest.id });
+    }
+    
+    const receivedRequest = (db.friendRequests || []).find(r => 
+        r.from === otherUserId && r.to === userId && r.status === 'pending'
+    );
+    if (receivedRequest) {
+        return res.json({ status: 'request_received', requestId: receivedRequest.id });
+    }
+    
+    res.json({ status: 'none' });
+});
+
 // File upload endpoint
 app.post('/api/upload', upload.single('file'), (req, res) => {
     try {
@@ -370,28 +557,49 @@ function getFileType(mimetype) {
 app.delete('/api/messages/:messageId', (req, res) => {
     try {
         const { messageId } = req.params;
-        const { userId } = req.body;
+        const { userId, deleteType } = req.body;
         
         if (!messageId || !userId) {
             return res.status(400).json({ error: 'Message ID and User ID required' });
         }
         
-        // Find and delete the message
         let deleted = false;
+        let conversationId = null;
+        
         Object.keys(db.messages).forEach(convId => {
             const msgIndex = db.messages[convId].findIndex(m => m.id === messageId);
             if (msgIndex !== -1) {
                 const msg = db.messages[convId][msgIndex];
                 // Only allow sender to delete their own message
                 if (msg.senderId === userId) {
-                    // If it's a file, delete the file too
-                    if (msg.fileUrl) {
-                        const filePath = path.join(__dirname, msg.fileUrl);
-                        if (fs.existsSync(filePath)) {
-                            fs.unlinkSync(filePath);
+                    conversationId = convId;
+                    
+                    if (deleteType === 'everyone') {
+                        // Delete for everyone - mark as deleted but keep in database
+                        db.messages[convId][msgIndex].deletedForEveryone = true;
+                        db.messages[convId][msgIndex].originalText = msg.text;
+                        db.messages[convId][msgIndex].text = null;
+                        
+                        // Delete the file if exists
+                        if (msg.fileUrl) {
+                            const filePath = path.join(__dirname, msg.fileUrl);
+                            if (fs.existsSync(filePath)) {
+                                fs.unlinkSync(filePath);
+                            }
+                            db.messages[convId][msgIndex].fileUrl = null;
+                            db.messages[convId][msgIndex].fileType = null;
                         }
+                    } else {
+                        // Delete for me only - completely remove from database
+                        if (msg.fileUrl) {
+                            const filePath = path.join(__dirname, msg.fileUrl);
+                            if (fs.existsSync(filePath)) {
+                                fs.unlinkSync(filePath);
+                            }
+                        }
+                        db.messages[convId].splice(msgIndex, 1);
                     }
-                    db.messages[convId].splice(msgIndex, 1);
+                    
                     deleted = true;
                     saveDatabase(db);
                 }
@@ -399,7 +607,7 @@ app.delete('/api/messages/:messageId', (req, res) => {
         });
         
         if (deleted) {
-            res.json({ success: true });
+            res.json({ success: true, deleteType, conversationId });
         } else {
             res.status(404).json({ error: 'Message not found or not authorized' });
         }
@@ -409,17 +617,26 @@ app.delete('/api/messages/:messageId', (req, res) => {
     }
 });
 
-// Get conversations for a user
+// Get conversations for a user (only with friends)
 app.get('/api/conversations/:userId', (req, res) => {
     const userId = req.params.userId;
     const conversations = [];
+    
+    // Get user's friends
+    const friendIds = (db.friends || [])
+        .filter(f => f.user1 === userId || f.user2 === userId)
+        .map(f => f.user1 === userId ? f.user2 : f.user1);
 
-    // Find all conversations involving this user
+    // Find all conversations involving this user with friends
     Object.keys(db.messages).forEach(convId => {
         if (convId.includes(userId)) {
             const messages = db.messages[convId];
             if (messages.length > 0) {
                 const otherUserId = convId.split('_').find(id => id !== userId);
+                
+                // Only show if they are friends
+                if (!friendIds.includes(otherUserId)) return;
+                
                 const otherUser = db.users.find(u => u.id === otherUserId);
                 
                 if (otherUser) {
@@ -436,6 +653,24 @@ app.get('/api/conversations/:userId', (req, res) => {
                         updatedAt: lastMessage.timestamp
                     });
                 }
+            }
+        }
+    });
+    
+    // Also add friends who have no messages yet
+    friendIds.forEach(friendId => {
+        const convId = getConversationId(userId, friendId);
+        const hasConv = conversations.some(c => c.id === convId);
+        if (!hasConv) {
+            const friend = db.users.find(u => u.id === friendId);
+            if (friend) {
+                conversations.push({
+                    id: convId,
+                    user: sanitizeUser(friend),
+                    lastMessage: null,
+                    unreadCount: 0,
+                    updatedAt: new Date().toISOString()
+                });
             }
         }
     });
@@ -462,6 +697,9 @@ io.on('connection', (socket) => {
     // User comes online
     socket.on('user_online', (userData) => {
         const { userId, username, fullName, avatar } = userData;
+        
+        // Store userId on socket for later use
+        socket.userId = userId;
         
         onlineUsers.set(socket.id, { userId, username, fullName, avatar });
         userSockets.set(userId, socket.id);
@@ -592,6 +830,25 @@ io.on('connection', (socket) => {
                         conversationId: convId 
                     });
                 }
+            }
+        }
+    });
+    
+    // Handle message deleted for everyone notification
+    socket.on('message_deleted_everyone', ({ messageId, conversationId, senderName }) => {
+        // Find the other user in this conversation
+        const parts = conversationId.split('_');
+        const userId = socket.userId;
+        const otherUserId = parts.find(id => id !== userId);
+        
+        if (otherUserId) {
+            const otherSocketId = userSockets.get(otherUserId);
+            if (otherSocketId) {
+                io.to(otherSocketId).emit('message_deleted_everyone', {
+                    messageId,
+                    conversationId,
+                    senderName
+                });
             }
         }
     });

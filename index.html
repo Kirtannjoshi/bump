@@ -7,156 +7,124 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet">
     <meta name="theme-color" content="#7C3AED">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
-    <!-- Auth Container - Instagram-Style Layout -->
+    <!-- Auth Container - Side by Side Layout -->
     <div id="auth-container" class="auth-container">
-        <!-- Left Side - Phone Mockups -->
-        <div class="auth-left">
-            <div class="phone-mockup">
-                <div class="phone-frame">
-                    <div class="phone-screen">
-                        <div class="mockup-header">
-                            <div class="mockup-avatar"></div>
-                            <div class="mockup-name">
-                                <div class="name-bar"></div>
-                                <div class="status-bar online"></div>
-                            </div>
-                        </div>
-                        <div class="mockup-messages">
-                            <div class="mockup-msg received">
-                                <div class="msg-bubble"></div>
-                            </div>
-                            <div class="mockup-msg sent">
-                                <div class="msg-bubble"></div>
-                            </div>
-                            <div class="mockup-msg received">
-                                <div class="msg-bubble long"></div>
-                            </div>
-                            <div class="mockup-msg sent">
-                                <div class="msg-bubble"></div>
-                            </div>
-                            <div class="mockup-msg received">
-                                <div class="msg-bubble short"></div>
-                            </div>
-                        </div>
-                        <div class="mockup-input">
-                            <div class="input-bar"></div>
-                            <div class="send-circle"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="floating-elements">
-                    <div class="float-emoji e1">💬</div>
-                    <div class="float-emoji e2">⚡</div>
-                    <div class="float-emoji e3">❤️</div>
-                    <div class="float-emoji e4">🔥</div>
-                </div>
-            </div>
+        <!-- Full Background -->
+        <div class="auth-bg-unified">
+            <div class="bg-gradient"></div>
+            <div class="bg-noise"></div>
         </div>
         
-        <!-- Right Side - Auth Forms -->
-        <div class="auth-right">
-            <div class="auth-card">
-                <!-- Logo -->
-                <div class="auth-logo">
-                    <i class="fas fa-bolt"></i>
-                    <span>Bump</span>
+        <!-- Two Column Content -->
+        <div class="auth-content-wrapper">
+            <!-- Left Side - Branding with Decorative Elements -->
+            <div class="auth-branding-side">
+                <!-- Decorative Floating Elements -->
+                <div class="deco-elements">
+                    <div class="deco-bubble deco-1">Hey! 👋</div>
+                    <div class="deco-bubble deco-2">Let's chat! 💬</div>
+                    <div class="deco-bubble deco-3">🔥</div>
+                    <div class="deco-emoji deco-4">❤️</div>
+                    <div class="deco-emoji deco-5">✨</div>
+                    <div class="deco-emoji deco-6">🚀</div>
+                    <div class="deco-emoji deco-7">💜</div>
+                    <div class="deco-sparkle sparkle-1"></div>
+                    <div class="deco-sparkle sparkle-2"></div>
+                    <div class="deco-sparkle sparkle-3"></div>
                 </div>
                 
-                <!-- Login Form -->
-                <form id="login-form" class="auth-form active">
-                    <p class="auth-subtitle">Sign in to continue chatting</p>
-                    
-                    <div class="form-group">
-                        <div class="input-wrapper">
-                            <input type="text" id="login-username" placeholder="Username or email" required autocomplete="username">
+                <!-- Center Logo -->
+                <div class="auth-brand-center">
+                    <h1 class="text-logo-main">Bump</h1>
+                    <p class="brand-tagline">Connect instantly. Chat seamlessly.</p>
+                </div>
+            </div>
+            
+            <!-- Right Side - Auth Forms -->
+            <div class="auth-form-side">
+                <div class="auth-form-card">
+                    <!-- Login Form -->
+                    <form id="login-form" class="auth-form active">
+                        <h2 class="auth-title">Welcome back!</h2>
+                        <p class="auth-subtitle">We're so excited to see you again!</p>
+                        
+                        <div class="form-group">
+                            <label class="form-label">EMAIL OR USERNAME</label>
+                            <input type="text" id="login-username" class="form-input" required autocomplete="username">
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="input-wrapper">
-                            <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password">
+                        <div class="form-group">
+                            <label class="form-label">PASSWORD</label>
+                            <input type="password" id="login-password" class="form-input" required autocomplete="current-password">
                         </div>
-                    </div>
-                    <button type="submit" class="btn-primary">
-                        <span>Log In</span>
-                    </button>
+                        <button type="submit" class="btn-primary-auth">Log In</button>
+                        
+                        <p class="auth-switch">Need an account? <a href="#" id="show-signup">Register</a></p>
+                    </form>
                     
-                    <div class="divider">
-                        <span>OR</span>
-                    </div>
-                    
-                    <p class="auth-switch">Don't have an account? <a href="#" id="show-signup">Sign up</a></p>
-                </form>
-                
-                <!-- Signup Form -->
-                <form id="signup-form" class="auth-form">
-                    <p class="auth-subtitle">Sign up to start chatting</p>
-                    
-                    <div class="form-group">
-                        <div class="input-wrapper">
-                            <input type="text" id="signup-fullname" placeholder="Full Name" required autocomplete="name">
+                    <!-- Signup Form -->
+                    <form id="signup-form" class="auth-form">
+                        <h2 class="auth-title">Create an account</h2>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">FULL NAME</label>
+                                <input type="text" id="signup-fullname" class="form-input" required autocomplete="name">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">USERNAME</label>
+                                <input type="text" id="signup-username" class="form-input" required autocomplete="username">
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="input-wrapper">
-                            <input type="text" id="signup-username" placeholder="Username" required autocomplete="username">
+                        <div class="form-group">
+                            <label class="form-label">EMAIL</label>
+                            <input type="email" id="signup-email" class="form-input" required autocomplete="email">
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="input-wrapper">
-                            <input type="email" id="signup-email" placeholder="Email" required autocomplete="email">
+                        <div class="form-group">
+                            <label class="form-label">PASSWORD</label>
+                            <input type="password" id="signup-password" class="form-input" required autocomplete="new-password" minlength="6">
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="input-wrapper">
-                            <input type="password" id="signup-password" placeholder="Password (min 6 characters)" required autocomplete="new-password" minlength="6">
+                        
+                        <!-- Avatar Selection -->
+                        <div class="form-group">
+                            <label class="form-label">CHOOSE AVATAR</label>
+                            <div class="avatar-types-row">
+                                <button type="button" class="avatar-type-btn active" data-style="avataaars">
+                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=default" alt="">
+                                </button>
+                                <button type="button" class="avatar-type-btn" data-style="adventurer">
+                                    <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=default" alt="">
+                                </button>
+                                <button type="button" class="avatar-type-btn" data-style="big-smile">
+                                    <img src="https://api.dicebear.com/7.x/big-smile/svg?seed=default" alt="">
+                                </button>
+                                <button type="button" class="avatar-type-btn" data-style="lorelei">
+                                    <img src="https://api.dicebear.com/7.x/lorelei/svg?seed=default" alt="">
+                                </button>
+                                <button type="button" class="avatar-type-btn" data-style="notionists">
+                                    <img src="https://api.dicebear.com/7.x/notionists/svg?seed=default" alt="">
+                                </button>
+                                <button type="button" class="avatar-type-btn" data-style="personas">
+                                    <img src="https://api.dicebear.com/7.x/personas/svg?seed=default" alt="">
+                                </button>
+                            </div>
+                            <input type="hidden" id="selected-avatar-style" value="avataaars">
                         </div>
-                    </div>
-                    
-                    <!-- Avatar Selection -->
-                    <div class="avatar-selection">
-                        <p class="avatar-label">Choose your avatar style</p>
-                        <div class="avatar-types">
-                            <button type="button" class="avatar-type-btn active" data-style="avataaars">
-                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=default" alt="Style 1">
-                            </button>
-                            <button type="button" class="avatar-type-btn" data-style="adventurer">
-                                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=default" alt="Style 2">
-                            </button>
-                            <button type="button" class="avatar-type-btn" data-style="big-smile">
-                                <img src="https://api.dicebear.com/7.x/big-smile/svg?seed=default" alt="Style 3">
-                            </button>
-                            <button type="button" class="avatar-type-btn" data-style="lorelei">
-                                <img src="https://api.dicebear.com/7.x/lorelei/svg?seed=default" alt="Style 4">
-                            </button>
-                            <button type="button" class="avatar-type-btn" data-style="notionists">
-                                <img src="https://api.dicebear.com/7.x/notionists/svg?seed=default" alt="Style 5">
-                            </button>
-                            <button type="button" class="avatar-type-btn" data-style="personas">
-                                <img src="https://api.dicebear.com/7.x/personas/svg?seed=default" alt="Style 6">
-                            </button>
-                        </div>
-                        <input type="hidden" id="selected-avatar-style" value="avataaars">
-                    </div>
-                    
-                    <button type="submit" class="btn-primary">
-                        <span>Sign Up</span>
-                    </button>
-                    
-                    <p class="terms-text">
-                        By signing up, you agree to our Terms and Privacy Policy
-                    </p>
-                    
-                    <div class="divider">
-                        <span>OR</span>
-                    </div>
-                    
-                    <p class="auth-switch">Have an account? <a href="#" id="show-login">Log in</a></p>
-                </form>
+                        
+                        <button type="submit" class="btn-primary-auth">Continue</button>
+                        
+                        <p class="terms-text">
+                            By registering, you agree to Bump's Terms of Service and Privacy Policy.
+                        </p>
+                        
+                        <p class="auth-switch"><a href="#" id="show-login">Already have an account?</a></p>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -166,13 +134,18 @@
         <!-- Navigation Rail -->
         <nav class="nav-rail">
             <div class="nav-logo">
-                <i class="fas fa-bolt"></i>
+                <span class="app-text-logo">B</span>
             </div>
             <div class="nav-items">
                 <button class="nav-item active" data-view="chats" title="Chats">
                     <i class="fas fa-comment-dots"></i>
                     <span class="nav-label">Chats</span>
                     <span class="nav-badge hidden" id="unread-badge">0</span>
+                </button>
+                <button class="nav-item" data-view="inbox" title="Inbox">
+                    <i class="fas fa-inbox"></i>
+                    <span class="nav-label">Inbox</span>
+                    <span class="nav-badge hidden" id="inbox-badge">0</span>
                 </button>
                 <button class="nav-item" data-view="search" title="Search">
                     <i class="fas fa-search"></i>
@@ -200,6 +173,10 @@
             <button class="mobile-nav-item active" data-view="chats">
                 <i class="fas fa-comment-dots"></i>
                 <span>Chats</span>
+            </button>
+            <button class="mobile-nav-item" data-view="inbox">
+                <i class="fas fa-inbox"></i>
+                <span>Inbox</span>
             </button>
             <button class="mobile-nav-item" data-view="search">
                 <i class="fas fa-search"></i>
@@ -231,6 +208,104 @@
                 </div>
                 <div class="chat-list" id="chat-list">
                     <!-- Chat items will be dynamically added -->
+                </div>
+            </div>
+
+            <!-- Inbox Sidebar - Gmail/Discord Style -->
+            <div id="inbox-sidebar" class="sidebar-content">
+                <div class="sidebar-header">
+                    <h2>Inbox</h2>
+                    <button class="btn-icon" id="compose-btn" title="Compose">
+                        <i class="fas fa-pen"></i>
+                    </button>
+                </div>
+                
+                <!-- Inbox Tabs -->
+                <div class="inbox-tabs">
+                    <button class="inbox-tab active" data-tab="all">
+                        <i class="fas fa-inbox"></i>
+                        <span>All</span>
+                    </button>
+                    <button class="inbox-tab" data-tab="requests">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Requests</span>
+                        <span class="tab-badge" id="requests-badge">0</span>
+                    </button>
+                    <button class="inbox-tab" data-tab="friends">
+                        <i class="fas fa-users"></i>
+                        <span>Friends</span>
+                    </button>
+                </div>
+                
+                <!-- All Tab Content -->
+                <div class="inbox-tab-content active" id="inbox-all">
+                    <!-- Bump Welcome Message -->
+                    <div class="inbox-item bump-official unread" onclick="openInboxViewer('welcome')">
+                        <div class="inbox-item-avatar">
+                            <div class="bump-avatar-mini">
+                                <span>B</span>
+                            </div>
+                            <i class="fas fa-check-circle verified-badge"></i>
+                        </div>
+                        <div class="inbox-item-content">
+                            <div class="inbox-item-header">
+                                <span class="inbox-item-sender">Bump Team</span>
+                                <span class="inbox-item-time">Now</span>
+                            </div>
+                            <p class="inbox-item-subject">Welcome to Bump! 🎉</p>
+                            <p class="inbox-item-preview">Thanks for joining! Start by adding friends...</p>
+                        </div>
+                        <i class="fas fa-chevron-right inbox-arrow"></i>
+                    </div>
+                    
+                    <!-- System Update -->
+                    <div class="inbox-item system" onclick="openInboxViewer('update')">
+                        <div class="inbox-item-avatar">
+                            <div class="system-avatar">
+                                <i class="fas fa-gift"></i>
+                            </div>
+                        </div>
+                        <div class="inbox-item-content">
+                            <div class="inbox-item-header">
+                                <span class="inbox-item-sender">System</span>
+                                <span class="inbox-item-time">Dec 22</span>
+                            </div>
+                            <p class="inbox-item-subject">Version 1.0 is here! 🎊</p>
+                            <p class="inbox-item-preview">New features: Friend requests, Inbox, and more!</p>
+                        </div>
+                        <i class="fas fa-chevron-right inbox-arrow"></i>
+                    </div>
+                </div>
+                
+                <!-- Requests Tab Content -->
+                <div class="inbox-tab-content" id="inbox-requests">
+                    <div class="friend-requests-list" id="friend-requests-list">
+                        <!-- Friend requests will be added here -->
+                        <div class="empty-state" id="no-requests">
+                            <i class="fas fa-user-clock"></i>
+                            <p>No pending requests</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Friends Tab Content -->
+                <div class="inbox-tab-content" id="inbox-friends">
+                    <div class="friends-list" id="friends-list">
+                        <!-- Friends will be added here -->
+                        <div class="empty-state" id="no-friends">
+                            <i class="fas fa-user-friends"></i>
+                            <p>No friends yet</p>
+                            <button class="btn-text" onclick="switchView('search')">Find Friends</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Report Bug -->
+                <div class="inbox-footer">
+                    <button class="inbox-footer-btn" onclick="showBugReportModal()">
+                        <i class="fas fa-bug"></i>
+                        <span>Report a Bug</span>
+                    </button>
                 </div>
             </div>
 
@@ -371,12 +446,8 @@
                                 <span>Bubble Style</span>
                             </div>
                             <select id="bubble-style-select" class="settings-select">
-                                <option value="snapchat">Snapchat</option>
-                                <option value="discord">Discord</option>
-                                <option value="rounded">Rounded Bubbles</option>
-                                <option value="ios">iOS iMessage</option>
-                                <option value="minimal">Minimal</option>
-                                <option value="modern">Modern</option>
+                                <option value="classic">💬 Classic</option>
+                                <option value="bump">✨ Bump Signature</option>
                             </select>
                         </div>
                         <div class="settings-item">
@@ -503,6 +574,28 @@
                         </button>
                     </div>
                 </div>
+                
+                <!-- File Staging Area (Hidden by default) -->
+                <div class="file-staging-area hidden" id="file-staging-area">
+                    <div class="staging-header">
+                        <span class="staging-count">0 files selected</span>
+                        <button class="staging-clear-btn" id="clear-staging-btn">
+                            <i class="fas fa-times"></i> Clear All
+                        </button>
+                    </div>
+                    <div class="staging-previews" id="staging-previews">
+                        <!-- File previews will be added here dynamically -->
+                    </div>
+                    <div class="staging-actions">
+                        <button class="btn-icon" id="add-more-files-btn" title="Add More Files">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="btn-primary staging-send-btn" id="send-staged-files-btn">
+                            <i class="fas fa-paper-plane"></i> Send Files
+                        </button>
+                    </div>
+                </div>
+                
                 <!-- Hidden file inputs -->
                 <input type="file" id="file-input" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.zip" multiple hidden>
                 <input type="file" id="camera-input" accept="image/*" capture="environment" hidden>
@@ -567,33 +660,113 @@
 
     <!-- About Modal -->
     <div class="modal hidden" id="about-modal">
-        <div class="modal-content">
+        <div class="modal-content about-modal-content">
             <div class="modal-header">
-                <h3>About Bump</h3>
+                <h3>About</h3>
                 <button class="btn-icon modal-close" id="close-about-modal">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body about-body">
-                <div class="about-logo">
-                    <i class="fas fa-bolt"></i>
-                </div>
-                <h2>Bump</h2>
+                <div class="about-logo-text">Bump</div>
+                <p class="about-tagline">Connect instantly. Chat seamlessly.</p>
                 <p class="about-version">Version 1.0.0</p>
-                <p class="about-desc">A modern real-time chat application inspired by WhatsApp, Discord, and Telegram.</p>
+                
                 <div class="about-features">
-                    <p>✨ Real-time messaging</p>
-                    <p>👤 User profiles</p>
-                    <p>🔍 User search</p>
-                    <p>📱 Mobile friendly</p>
-                    <p>🔔 Push notifications</p>
+                    <div class="about-feature">
+                        <i class="fas fa-bolt"></i>
+                        <span>Real-time messaging</span>
+                    </div>
+                    <div class="about-feature">
+                        <i class="fas fa-user-friends"></i>
+                        <span>Friend system</span>
+                    </div>
+                    <div class="about-feature">
+                        <i class="fas fa-image"></i>
+                        <span>Media sharing</span>
+                    </div>
+                    <div class="about-feature">
+                        <i class="fas fa-bell"></i>
+                        <span>Push notifications</span>
+                    </div>
+                    <div class="about-feature">
+                        <i class="fas fa-mobile-alt"></i>
+                        <span>Mobile friendly</span>
+                    </div>
+                    <div class="about-feature">
+                        <i class="fas fa-lock"></i>
+                        <span>Secure & private</span>
+                    </div>
                 </div>
-                <p class="about-copyright">© 2025 Bump Chat</p>
+                
+                <p class="about-copyright">© 2025 Bump Chat. All rights reserved.</p>
             </div>
         </div>
     </div>
 
-    <!-- Avatar Picker Modal -->
+    <!-- Inbox Message Viewer - Discord Thread Style -->
+    <div class="inbox-viewer hidden" id="inbox-viewer">
+        <div class="inbox-viewer-panel">
+            <!-- Header -->
+            <div class="inbox-viewer-header">
+                <button class="btn-icon" onclick="closeInboxViewer()">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="inbox-viewer-title">
+                    <span id="inbox-viewer-sender">Bump Team</span>
+                    <span class="inbox-viewer-badge" id="inbox-viewer-badge"><i class="fas fa-check-circle"></i> Verified</span>
+                </div>
+                <button class="btn-icon" onclick="closeInboxViewer()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Thread Content -->
+            <div class="inbox-viewer-content" id="inbox-viewer-content">
+                <!-- Messages will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bug Report Modal -->
+    <div class="modal hidden" id="bug-report-modal">
+        <div class="modal-content bug-modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-bug"></i> Report a Bug</h3>
+                <button class="btn-icon modal-close" onclick="hideBugReportModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="bug-report-form" class="bug-form">
+                    <div class="form-group">
+                        <label class="form-label">DESCRIBE THE BUG <span class="required">*</span></label>
+                        <textarea id="bug-description" class="form-textarea" rows="4" placeholder="What went wrong?" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">STEPS TO REPRODUCE</label>
+                        <textarea id="bug-steps" class="form-textarea" rows="3" placeholder="How can we reproduce this bug?"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">BUG SEVERITY</label>
+                        <select id="bug-severity" class="form-select">
+                            <option value="low">Low - Minor issue</option>
+                            <option value="medium">Medium - Affects usability</option>
+                            <option value="high">High - Major problem</option>
+                            <option value="critical">Critical - App broken</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-discord">
+                        <i class="fas fa-paper-plane"></i>
+                        Submit Report
+                    </button>
+                </form>
+                <p class="bug-note">Your report will be sent to the Bump team. Thank you for helping us improve! 💜</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Avatar Picker Modal - Unified Categorized -->
     <div class="modal hidden" id="avatar-picker-modal">
         <div class="modal-content avatar-modal-content">
             <div class="modal-header">
@@ -602,64 +775,109 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body avatar-picker-body">
                 <div class="avatar-preview-section">
                     <img id="avatar-preview" src="" alt="Avatar Preview" class="avatar-preview-img">
                     <button class="btn-secondary" id="randomize-avatar-btn">
-                        <i class="fas fa-random"></i> Randomize
+                        <i class="fas fa-shuffle"></i> Randomize
                     </button>
                 </div>
-                <p class="avatar-style-label">Select Style</p>
-                <div class="avatar-picker-grid" id="avatar-picker-grid">
-                    <button type="button" class="avatar-picker-btn" data-style="avataaars">
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=picker1" alt="Avataaars">
-                        <span>Avataaars</span>
-                    </button>
-                    <button type="button" class="avatar-picker-btn" data-style="adventurer">
-                        <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=picker1" alt="Adventurer">
-                        <span>Adventurer</span>
-                    </button>
-                    <button type="button" class="avatar-picker-btn" data-style="big-smile">
-                        <img src="https://api.dicebear.com/7.x/big-smile/svg?seed=picker1" alt="Big Smile">
-                        <span>Big Smile</span>
-                    </button>
-                    <button type="button" class="avatar-picker-btn" data-style="lorelei">
-                        <img src="https://api.dicebear.com/7.x/lorelei/svg?seed=picker1" alt="Lorelei">
-                        <span>Lorelei</span>
-                    </button>
-                    <button type="button" class="avatar-picker-btn" data-style="notionists">
-                        <img src="https://api.dicebear.com/7.x/notionists/svg?seed=picker1" alt="Notionists">
-                        <span>Notionists</span>
-                    </button>
-                    <button type="button" class="avatar-picker-btn" data-style="personas">
-                        <img src="https://api.dicebear.com/7.x/personas/svg?seed=picker1" alt="Personas">
-                        <span>Personas</span>
-                    </button>
-                    <button type="button" class="avatar-picker-btn" data-style="pixel-art">
-                        <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=picker1" alt="Pixel Art">
-                        <span>Pixel Art</span>
-                    </button>
-                    <button type="button" class="avatar-picker-btn" data-style="thumbs">
-                        <img src="https://api.dicebear.com/7.x/thumbs/svg?seed=picker1" alt="Thumbs">
-                        <span>Thumbs</span>
-                    </button>
-                    <button type="button" class="avatar-picker-btn" data-style="fun-emoji">
-                        <img src="https://api.dicebear.com/7.x/fun-emoji/svg?seed=picker1" alt="Fun Emoji">
-                        <span>Fun Emoji</span>
-                    </button>
-                    <button type="button" class="avatar-picker-btn" data-style="bottts">
-                        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=picker1" alt="Robots">
-                        <span>Robots</span>
-                    </button>
-                    <button type="button" class="avatar-picker-btn" data-style="micah">
-                        <img src="https://api.dicebear.com/7.x/micah/svg?seed=picker1" alt="Micah">
-                        <span>Micah</span>
-                    </button>
-                    <button type="button" class="avatar-picker-btn" data-style="open-peeps">
-                        <img src="https://api.dicebear.com/7.x/open-peeps/svg?seed=picker1" alt="Open Peeps">
-                        <span>Open Peeps</span>
-                    </button>
+                
+                <!-- Categorized Avatar Rows -->
+                <div class="avatar-categories" id="avatar-categories">
+                    <!-- Artistic Category -->
+                    <div class="avatar-category">
+                        <h4 class="category-label">✨ Artistic</h4>
+                        <div class="category-row">
+                            <button type="button" class="avatar-picker-btn" data-style="avataaars" data-category="artistic">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=pick1" alt="Avataaars">
+                                <span>Avataaars</span>
+                            </button>
+                            <button type="button" class="avatar-picker-btn" data-style="adventurer" data-category="artistic">
+                                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=pick1" alt="Adventurer">
+                                <span>Adventurer</span>
+                            </button>
+                            <button type="button" class="avatar-picker-btn" data-style="notionists" data-category="artistic">
+                                <img src="https://api.dicebear.com/7.x/notionists/svg?seed=pick1" alt="Notionists">
+                                <span>Notionists</span>
+                            </button>
+                            <button type="button" class="avatar-picker-btn" data-style="open-peeps" data-category="artistic">
+                                <img src="https://api.dicebear.com/7.x/open-peeps/svg?seed=pick1" alt="Open Peeps">
+                                <span>Open Peeps</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Fun Faces Category -->
+                    <div class="avatar-category">
+                        <h4 class="category-label">😊 Fun Faces</h4>
+                        <div class="category-row">
+                            <button type="button" class="avatar-picker-btn" data-style="big-smile" data-category="fun">
+                                <img src="https://api.dicebear.com/7.x/big-smile/svg?seed=pick1" alt="Big Smile">
+                                <span>Big Smile</span>
+                            </button>
+                            <button type="button" class="avatar-picker-btn" data-style="lorelei" data-category="fun">
+                                <img src="https://api.dicebear.com/7.x/lorelei/svg?seed=pick1" alt="Lorelei">
+                                <span>Lorelei</span>
+                            </button>
+                            <button type="button" class="avatar-picker-btn" data-style="fun-emoji" data-category="fun">
+                                <img src="https://api.dicebear.com/7.x/fun-emoji/svg?seed=pick1" alt="Fun Emoji">
+                                <span>Fun Emoji</span>
+                            </button>
+                            <button type="button" class="avatar-picker-btn" data-style="thumbs" data-category="fun">
+                                <img src="https://api.dicebear.com/7.x/thumbs/svg?seed=pick1" alt="Thumbs">
+                                <span>Thumbs</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Abstract & Robots Category -->
+                    <div class="avatar-category">
+                        <h4 class="category-label">🤖 Abstract & Robots</h4>
+                        <div class="category-row">
+                            <button type="button" class="avatar-picker-btn" data-style="bottts" data-category="abstract">
+                                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=pick1" alt="Robots">
+                                <span>Robots</span>
+                            </button>
+                            <button type="button" class="avatar-picker-btn" data-style="shapes" data-category="abstract">
+                                <img src="https://api.dicebear.com/7.x/shapes/svg?seed=pick1" alt="Shapes">
+                                <span>Shapes</span>
+                            </button>
+                            <button type="button" class="avatar-picker-btn" data-style="identicon" data-category="abstract">
+                                <img src="https://api.dicebear.com/7.x/identicon/svg?seed=pick1" alt="Identicon">
+                                <span>Identicon</span>
+                            </button>
+                            <button type="button" class="avatar-picker-btn" data-style="rings" data-category="abstract">
+                                <img src="https://api.dicebear.com/7.x/rings/svg?seed=pick1" alt="Rings">
+                                <span>Rings</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Pixelated Category -->
+                    <div class="avatar-category">
+                        <h4 class="category-label">🎮 Pixelated</h4>
+                        <div class="category-row">
+                            <button type="button" class="avatar-picker-btn" data-style="pixel-art" data-category="pixel">
+                                <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=pick1" alt="Pixel Art">
+                                <span>Pixel Art</span>
+                            </button>
+                            <button type="button" class="avatar-picker-btn" data-style="pixel-art-neutral" data-category="pixel">
+                                <img src="https://api.dicebear.com/7.x/pixel-art-neutral/svg?seed=pick1" alt="Neutral">
+                                <span>Neutral</span>
+                            </button>
+                            <button type="button" class="avatar-picker-btn" data-style="micah" data-category="pixel">
+                                <img src="https://api.dicebear.com/7.x/micah/svg?seed=pick1" alt="Micah">
+                                <span>Micah</span>
+                            </button>
+                            <button type="button" class="avatar-picker-btn" data-style="personas" data-category="pixel">
+                                <img src="https://api.dicebear.com/7.x/personas/svg?seed=pick1" alt="Personas">
+                                <span>Personas</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
+                
                 <button class="btn-primary" id="save-avatar-btn">
                     <i class="fas fa-check"></i> Save Avatar
                 </button>
@@ -671,6 +889,30 @@
     <audio id="notification-sound" preload="auto">
         <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
     </audio>
+
+    <!-- Delete Message Modal -->
+    <div class="delete-modal-overlay hidden" id="delete-modal">
+        <div class="delete-modal">
+            <div class="delete-modal-header">
+                <i class="fas fa-trash-alt"></i>
+                <h3>Delete Message</h3>
+            </div>
+            <p class="delete-modal-text">How would you like to delete this message?</p>
+            <div class="delete-modal-options">
+                <button class="delete-option-btn delete-for-me" id="delete-for-me-btn">
+                    <i class="fas fa-user"></i>
+                    <span>Delete for Me</span>
+                    <small>Only you won't see this message</small>
+                </button>
+                <button class="delete-option-btn delete-for-everyone" id="delete-for-everyone-btn">
+                    <i class="fas fa-users"></i>
+                    <span>Delete for Everyone</span>
+                    <small>Message will be removed for all</small>
+                </button>
+            </div>
+            <button class="delete-modal-cancel" id="delete-cancel-btn">Cancel</button>
+        </div>
+    </div>
 
     <!-- Toast Notifications -->
     <div class="toast-container" id="toast-container"></div>

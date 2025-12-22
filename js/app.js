@@ -213,9 +213,27 @@ function initSocket() {
     socket.on('user_stopped_typing', handleUserStoppedTyping);
     socket.on('messages_read', handleMessagesRead);
     socket.on('message_deleted', handleMessageDeleted);
+    socket.on('message_deleted_everyone', handleMessageDeletedEveryone);
+    
+    // Friend request events
+    socket.on('friend_request_received', handleFriendRequestReceived);
+    socket.on('friend_request_accepted', handleFriendRequestAccepted);
 }
 
-// Handle message deletion from other user
+// Handle incoming friend request
+function handleFriendRequestReceived({ request, fromUser }) {
+    showToast(`${fromUser?.fullName || 'Someone'} sent you a friend request!`, 'info');
+    loadFriendRequests();
+}
+
+// Handle friend request accepted
+function handleFriendRequestAccepted({ user }) {
+    showToast(`${user?.fullName || 'Someone'} accepted your friend request!`, 'success');
+    loadFriends();
+    loadConversations();
+}
+
+// Handle message deletion from other user (delete for me by sender - just hide)
 function handleMessageDeleted({ messageId, conversationId }) {
     // Remove from local state
     if (AppState.messages[conversationId]) {
@@ -226,6 +244,46 @@ function handleMessageDeleted({ messageId, conversationId }) {
     if (msgEl) {
         msgEl.style.animation = 'fadeOut 0.3s ease forwards';
         setTimeout(() => msgEl.remove(), 300);
+    }
+}
+
+// Handle "delete for everyone" - show notice that message was deleted
+function handleMessageDeletedEveryone({ messageId, conversationId, senderName }) {
+    // Find the message in local state
+    if (AppState.messages[conversationId]) {
+        const msgIndex = AppState.messages[conversationId].findIndex(m => m.id === messageId);
+        if (msgIndex !== -1) {
+            // Mark as deleted for everyone
+            AppState.messages[conversationId][msgIndex].deletedForEveryone = true;
+            AppState.messages[conversationId][msgIndex].originalText = AppState.messages[conversationId][msgIndex].text;
+            AppState.messages[conversationId][msgIndex].text = null;
+            AppState.messages[conversationId][msgIndex].fileUrl = null;
+        }
+    }
+    
+    // Update the DOM to show deleted notice
+    const msgEl = document.querySelector(`[data-msg-id="${messageId}"]`);
+    if (msgEl) {
+        // Transform the message into a deleted placeholder
+        msgEl.classList.add('message-deleted');
+        
+        // Find or create the content area
+        const bubble = msgEl.querySelector('.message-bubble');
+        const content = msgEl.querySelector('.message-content') || bubble;
+        
+        if (content) {
+            content.innerHTML = `
+                <i class="fas fa-ban deleted-notice-icon"></i>
+                <span>This message was deleted</span>
+            `;
+        }
+        
+        // Remove action buttons
+        const actions = msgEl.querySelector('.message-actions');
+        if (actions) actions.remove();
+        
+        // Show toast notification
+        showToast(`${senderName} deleted a message`, 'info');
     }
 }
 
@@ -284,6 +342,8 @@ const AppState = {
     conversations: [],
     messages: {},
     users: [],
+    friends: [],
+    friendRequests: [],
     selectedAvatarStyle: 'avataaars'
 };
 
@@ -312,11 +372,19 @@ function initDOM() {
     DOM.searchSidebar = document.getElementById('search-sidebar');
     DOM.profileSidebar = document.getElementById('profile-sidebar');
     DOM.settingsSidebar = document.getElementById('settings-sidebar');
+    DOM.inboxSidebar = document.getElementById('inbox-sidebar');
     DOM.chatList = document.getElementById('chat-list');
     DOM.chatSearch = document.getElementById('chat-search');
     DOM.userSearch = document.getElementById('user-search');
     DOM.searchResults = document.getElementById('search-results');
     DOM.newChatBtn = document.getElementById('new-chat-btn');
+    
+    // Inbox / Friends
+    DOM.friendRequestsList = document.getElementById('friend-requests-list');
+    DOM.friendsList = document.getElementById('friends-list');
+    DOM.requestsCount = document.getElementById('requests-count');
+    DOM.friendsCount = document.getElementById('friends-count');
+    DOM.inboxBadge = document.getElementById('inbox-badge');
     
     // Avatar Selection
     DOM.avatarTypeBtns = document.querySelectorAll('.avatar-type-btn');
@@ -716,10 +784,15 @@ function switchView(view) {
     DOM.searchSidebar?.classList.toggle('active', view === 'search');
     DOM.profileSidebar?.classList.toggle('active', view === 'profile');
     DOM.settingsSidebar?.classList.toggle('active', view === 'settings');
+    DOM.inboxSidebar?.classList.toggle('active', view === 'inbox');
     
     if (view === 'profile') updateProfileView();
     if (view === 'search') loadAllUsers();
     if (view === 'settings') loadSettings();
+    if (view === 'inbox') {
+        loadFriendRequests();
+        loadFriends();
+    }
     
     if (window.innerWidth <= 768) closeChatOnMobile();
 }
@@ -842,6 +915,175 @@ function setupSettingsListeners() {
             }
         });
     });
+}
+
+// ========================================
+// FRIENDS SYSTEM
+// ========================================
+
+async function loadFriendRequests() {
+    const currentUser = getCurrentUser();
+    if (!currentUser) return;
+    
+    try {
+        const requests = await apiRequest(`/friends/requests/${currentUser.id}`);
+        AppState.friendRequests = requests;
+        renderFriendRequests();
+        updateInboxBadge();
+    } catch (error) {
+        console.error('Error loading friend requests:', error);
+    }
+}
+
+async function loadFriends() {
+    const currentUser = getCurrentUser();
+    if (!currentUser) return;
+    
+    try {
+        const friends = await apiRequest(`/friends/${currentUser.id}`);
+        AppState.friends = friends;
+        renderFriendsList();
+    } catch (error) {
+        console.error('Error loading friends:', error);
+    }
+}
+
+function renderFriendRequests() {
+    const requestsList = document.getElementById('friend-requests-list');
+    if (!requestsList) return;
+    
+    const requests = AppState.friendRequests || [];
+    const noRequests = document.getElementById('no-requests');
+    
+    if (requests.length === 0) {
+        if (noRequests) noRequests.style.display = 'flex';
+        requestsList.innerHTML = `
+            <div class="empty-state" id="no-requests">
+                <i class="fas fa-user-clock"></i>
+                <p>No pending requests</p>
+            </div>
+        `;
+    } else {
+        requestsList.innerHTML = requests.map(req => `
+            <div class="friend-request-item" data-request-id="${req.id}">
+                <img src="${req.fromUser?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}" alt="" class="friend-request-avatar">
+                <div class="friend-request-info">
+                    <div class="friend-request-name">${req.fromUser?.fullName || 'Unknown'}</div>
+                    <div class="friend-request-username">@${req.fromUser?.username || 'unknown'}</div>
+                </div>
+                <div class="friend-request-actions">
+                    <button class="btn-accept" onclick="acceptFriendRequest('${req.id}')">Accept</button>
+                    <button class="btn-decline" onclick="rejectFriendRequest('${req.id}')">Ignore</button>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    // Update badges
+    updateRequestsBadge();
+    updateInboxBadge();
+}
+
+function renderFriendsList() {
+    const friendsList = document.getElementById('friends-list');
+    if (!friendsList) return;
+    
+    const friends = AppState.friends || [];
+    const noFriends = document.getElementById('no-friends');
+    
+    if (friends.length === 0) {
+        friendsList.innerHTML = `
+            <div class="empty-state" id="no-friends">
+                <i class="fas fa-user-friends"></i>
+                <p>No friends yet</p>
+                <button class="btn-text" onclick="switchView('search')">Find Friends</button>
+            </div>
+        `;
+    } else {
+        friendsList.innerHTML = friends.map(friend => `
+            <div class="friend-item" data-user-id="${friend.id}" onclick="openChat('${friend.id}')">
+                <img src="${friend.avatar}" alt="" class="friend-avatar">
+                <div class="friend-info">
+                    <div class="friend-name">${friend.fullName}</div>
+                    <div class="friend-status ${isUserOnline(friend.id) ? 'online' : ''}">
+                        ${isUserOnline(friend.id) ? 'Online' : 'Offline'}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+function updateInboxBadge() {
+    const count = (AppState.friendRequests || []).length;
+    if (DOM.inboxBadge) {
+        DOM.inboxBadge.textContent = count;
+        DOM.inboxBadge.classList.toggle('hidden', count === 0);
+    }
+}
+
+async function sendFriendRequest(toUserId) {
+    const currentUser = getCurrentUser();
+    if (!currentUser) return;
+    
+    try {
+        await apiRequest('/friends/request', 'POST', {
+            fromUserId: currentUser.id,
+            toUserId
+        });
+        showToast('Friend request sent!', 'success');
+        // Refresh search results to update button state
+        if (DOM.userSearch?.value) {
+            searchUsers(DOM.userSearch.value);
+        }
+    } catch (error) {
+        showToast(error.message || 'Failed to send request', 'error');
+    }
+}
+
+async function acceptFriendRequest(requestId) {
+    const currentUser = getCurrentUser();
+    if (!currentUser) return;
+    
+    try {
+        await apiRequest('/friends/accept', 'POST', {
+            requestId,
+            userId: currentUser.id
+        });
+        showToast('Friend request accepted!', 'success');
+        loadFriendRequests();
+        loadFriends();
+        loadConversations();
+    } catch (error) {
+        showToast(error.message || 'Failed to accept request', 'error');
+    }
+}
+
+async function rejectFriendRequest(requestId) {
+    const currentUser = getCurrentUser();
+    if (!currentUser) return;
+    
+    try {
+        await apiRequest('/friends/reject', 'POST', {
+            requestId,
+            userId: currentUser.id
+        });
+        showToast('Friend request rejected', 'info');
+        loadFriendRequests();
+    } catch (error) {
+        showToast(error.message || 'Failed to reject request', 'error');
+    }
+}
+
+async function getFriendshipStatus(otherUserId) {
+    const currentUser = getCurrentUser();
+    if (!currentUser) return { status: 'none' };
+    
+    try {
+        return await apiRequest(`/friends/status/${currentUser.id}/${otherUserId}`);
+    } catch (error) {
+        return { status: 'none' };
+    }
 }
 
 // ========================================
@@ -971,8 +1213,7 @@ function renderMessages(userId) {
     const messages = AppState.messages[userId] || [];
     const currentUser = getCurrentUser();
     const bubbleStyle = Settings.get('bubbleStyle');
-    const isDiscord = bubbleStyle === 'discord';
-    const isSnapchat = bubbleStyle === 'snapchat';
+    const isBump = bubbleStyle === 'bump';
 
     if (messages.length === 0) {
         DOM.chatMessages.innerHTML = `
@@ -1012,18 +1253,37 @@ function renderMessages(userId) {
         
         // Check for media content
         const mediaHtml = msg.fileUrl ? renderMediaMessage(msg) : '';
-        const textHtml = msg.text ? escapeHtml(msg.text) : '';
+        // Process text with URL link previews
+        const textHtml = msg.text ? LinkPreviewManager.processTextWithLinks(msg.text) : '';
+        
+        // Check if message was deleted for everyone (show placeholder)
+        if (msg.deletedForEveryone) {
+            html += `
+                <div class="message ${isSent ? 'sent' : 'received'} message-deleted" data-msg-id="${msg.id}" data-sender="${senderName}">
+                    ${isBump ? `<img src="${senderAvatar}" alt="" class="message-avatar">` : ''}
+                    <div class="message-bubble">
+                        ${isBump ? `<div class="message-header"><span class="message-sender">${senderName}</span></div>` : ''}
+                        <div class="message-content">
+                            <i class="fas fa-ban deleted-notice-icon"></i>
+                            <span>${isSent ? 'You deleted this message' : 'This message was deleted'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return;
+        }
         
         // Message actions (delete, save) - always show for sent, download for media
         const hasMedia = msg.fileUrl && (msg.fileType === 'image' || msg.fileType === 'video');
         const actionsHtml = `
             <div class="message-actions">
                 ${hasMedia ? `<button class="msg-action-btn save-btn" onclick="event.stopPropagation(); saveMedia('${msg.fileUrl}', '${msg.fileName || 'file'}')" title="Save to device"><i class="fas fa-download"></i></button>` : ''}
-                ${isSent ? `<button class="msg-action-btn delete-btn" onclick="event.stopPropagation(); deleteMessage('${msg.id}')" title="Delete message"><i class="fas fa-trash"></i></button>` : ''}
+                ${isSent ? `<button class="msg-action-btn delete-btn" onclick="event.stopPropagation(); showDeleteModal('${msg.id}')" title="Delete message"><i class="fas fa-trash"></i></button>` : ''}
             </div>
         `;
         
-        if (isDiscord) {
+        if (isBump) {
+            // Bump Signature Style - 70% Discord + 30% Snapchat
             html += `
                 <div class="message ${isSent ? 'sent' : 'received'}" data-msg-id="${msg.id}" data-sender="${senderName}">
                     <img src="${senderAvatar}" alt="" class="message-avatar">
@@ -1037,21 +1297,8 @@ function renderMessages(userId) {
                     </div>
                 </div>
             `;
-        } else if (isSnapchat) {
-            html += `
-                <div class="message ${isSent ? 'sent' : 'received'}" data-msg-id="${msg.id}" data-sender="${senderName}">
-                    <div class="message-bubble">
-                        ${mediaHtml}
-                        ${textHtml}
-                        ${actionsHtml}
-                    </div>
-                    <span class="message-time">
-                        ${isSent ? '' : statusHtml}
-                        ${msg.read && isSent ? '<span class="snap-delivered"><i class="fas fa-play"></i> Delivered</span>' : ''}
-                    </span>
-                </div>
-            `;
         } else {
+            // Classic Style - WhatsApp/Telegram bubbles
             html += `
                 <div class="message ${isSent ? 'sent' : 'received'}" data-msg-id="${msg.id}" data-sender="${senderName}">
                     <div class="message-bubble">
@@ -1080,8 +1327,7 @@ function appendMessage(message) {
     const isSent = message.senderId === currentUser.id;
     const showReadReceipt = isSent && Settings.get('readReceipts');
     const bubbleStyle = Settings.get('bubbleStyle');
-    const isDiscord = bubbleStyle === 'discord';
-    const isSnapchat = bubbleStyle === 'snapchat';
+    const isBump = bubbleStyle === 'bump';
     const otherUser = AppState.selectedUser;
     const senderName = isSent ? currentUser.fullName : (otherUser?.fullName || 'User');
     const senderAvatar = isSent ? currentUser.avatar : (otherUser?.avatar || '');
@@ -1097,14 +1343,15 @@ function appendMessage(message) {
     
     // Check for media content
     const mediaHtml = message.fileUrl ? renderMediaMessage(message) : '';
-    const textHtml = message.text ? escapeHtml(message.text) : '';
+    // Process text with URL link previews
+    const textHtml = message.text ? LinkPreviewManager.processTextWithLinks(message.text) : '';
     
     // Message actions
     const hasMedia = message.fileUrl && (message.fileType === 'image' || message.fileType === 'video');
     const actionsHtml = `
         <div class="message-actions">
             ${hasMedia ? `<button class="msg-action-btn save-btn" onclick="event.stopPropagation(); saveMedia('${message.fileUrl}', '${message.fileName || 'file'}')" title="Save to device"><i class="fas fa-download"></i></button>` : ''}
-            ${isSent ? `<button class="msg-action-btn delete-btn" onclick="event.stopPropagation(); deleteMessage('${message.id}')" title="Delete message"><i class="fas fa-trash"></i></button>` : ''}
+            ${isSent ? `<button class="msg-action-btn delete-btn" onclick="event.stopPropagation(); showDeleteModal('${message.id}')" title="Delete message"><i class="fas fa-trash"></i></button>` : ''}
         </div>
     `;
 
@@ -1113,7 +1360,8 @@ function appendMessage(message) {
     messageEl.dataset.msgId = message.id;
     messageEl.dataset.sender = senderName;
     
-    if (isDiscord) {
+    if (isBump) {
+        // Bump Signature Style
         messageEl.innerHTML = `
             <img src="${senderAvatar}" alt="" class="message-avatar">
             <div class="message-bubble">
@@ -1125,18 +1373,8 @@ function appendMessage(message) {
                 ${actionsHtml}
             </div>
         `;
-    } else if (isSnapchat) {
-        messageEl.innerHTML = `
-            <div class="message-bubble">
-                ${mediaHtml}
-                ${textHtml}
-                ${actionsHtml}
-            </div>
-            <span class="message-time">
-                ${message.read && isSent ? '<span class="snap-delivered"><i class="fas fa-play"></i> Delivered</span>' : ''}
-            </span>
-        `;
     } else {
+        // Classic Style
         messageEl.innerHTML = `
             <div class="message-bubble">
                 ${mediaHtml}
@@ -1225,12 +1463,15 @@ async function loadAllUsers() {
 }
 
 function renderSearchResults(query) {
+    const currentUser = getCurrentUser();
     const users = query 
         ? AppState.users.filter(u => 
-            u.fullName.toLowerCase().includes(query.toLowerCase()) ||
-            u.username.toLowerCase().includes(query.toLowerCase())
+            u.id !== currentUser?.id && (
+                u.fullName.toLowerCase().includes(query.toLowerCase()) ||
+                u.username.toLowerCase().includes(query.toLowerCase())
+            )
           )
-        : AppState.users;
+        : AppState.users.filter(u => u.id !== currentUser?.id);
 
     if (users.length === 0) {
         DOM.searchResults.innerHTML = `
@@ -1242,18 +1483,40 @@ function renderSearchResults(query) {
         return;
     }
 
-    DOM.searchResults.innerHTML = users.map(user => `
-        <div class="search-result-item" data-user-id="${user.id}">
-            <img src="${user.avatar}" alt="${user.fullName}">
-            <div class="search-result-info">
-                <span class="search-result-name">${user.fullName}</span>
-                <span class="search-result-username">@${user.username}</span>
-            </div>
-        </div>
-    `).join('');
+    // Check friendship status for each user
+    Promise.all(users.map(async user => {
+        const status = await getFriendshipStatus(user.id);
+        return { user, status: status.status };
+    })).then(results => {
+        DOM.searchResults.innerHTML = results.map(({ user, status }) => {
+            let actionBtn = '';
+            if (status === 'friends') {
+                actionBtn = `<button class="add-friend-btn friends" disabled><i class="fas fa-check"></i> Friends</button>`;
+            } else if (status === 'request_sent') {
+                actionBtn = `<button class="add-friend-btn pending" disabled>Pending</button>`;
+            } else if (status === 'request_received') {
+                actionBtn = `<button class="add-friend-btn" onclick="event.stopPropagation(); switchView('inbox')">View Request</button>`;
+            } else {
+                actionBtn = `<button class="add-friend-btn" onclick="event.stopPropagation(); sendFriendRequest('${user.id}')"><i class="fas fa-user-plus"></i> Add</button>`;
+            }
+            
+            return `
+                <div class="search-result-item" data-user-id="${user.id}">
+                    <img src="${user.avatar}" alt="${user.fullName}">
+                    <div class="search-result-info">
+                        <span class="search-result-name">${user.fullName}</span>
+                        <span class="search-result-username">@${user.username}</span>
+                    </div>
+                    <div class="search-result-action">
+                        ${actionBtn}
+                    </div>
+                </div>
+            `;
+        }).join('');
 
-    DOM.searchResults.querySelectorAll('.search-result-item').forEach(item => {
-        item.addEventListener('click', () => showUserProfile(item.dataset.userId));
+        DOM.searchResults.querySelectorAll('.search-result-item').forEach(item => {
+            item.addEventListener('click', () => showUserProfile(item.dataset.userId));
+        });
     });
 }
 
@@ -1524,7 +1787,144 @@ const MediaHandler = {
     }
 };
 
+// ========================================
+// FILE STAGING MANAGER
+// Multi-file preview before sending
+// ========================================
+
+const FileStagingManager = {
+    stagedFiles: [],
+    
+    init() {
+        // DOM elements
+        this.stagingArea = document.getElementById('file-staging-area');
+        this.previewsContainer = document.getElementById('staging-previews');
+        this.countLabel = this.stagingArea?.querySelector('.staging-count');
+        this.clearBtn = document.getElementById('clear-staging-btn');
+        this.sendBtn = document.getElementById('send-staged-files-btn');
+        this.addMoreBtn = document.getElementById('add-more-files-btn');
+        
+        // Event listeners
+        this.clearBtn?.addEventListener('click', () => this.clearAll());
+        this.sendBtn?.addEventListener('click', () => this.sendAllFiles());
+        this.addMoreBtn?.addEventListener('click', () => DOM.fileInput?.click());
+    },
+    
+    addFiles(files) {
+        for (const file of files) {
+            const id = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            this.stagedFiles.push({ id, file, preview: null });
+            this.createPreview(id, file);
+        }
+        this.updateUI();
+    },
+    
+    createPreview(id, file) {
+        const item = document.createElement('div');
+        item.className = 'staging-item';
+        item.dataset.id = id;
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'staging-remove-btn';
+        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+        removeBtn.onclick = (e) => {
+            e.stopPropagation();
+            this.removeFile(id);
+        };
+        
+        if (file.type.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            item.appendChild(img);
+        } else if (file.type.startsWith('video/')) {
+            const video = document.createElement('video');
+            video.src = URL.createObjectURL(file);
+            video.muted = true;
+            item.appendChild(video);
+        } else {
+            // Document preview
+            const docPreview = document.createElement('div');
+            docPreview.className = 'staging-item-doc';
+            const iconClass = this.getDocIcon(file.name);
+            docPreview.innerHTML = `
+                <i class="fas ${iconClass}"></i>
+                <span>${file.name.length > 12 ? file.name.substring(0, 10) + '...' : file.name}</span>
+            `;
+            item.appendChild(docPreview);
+        }
+        
+        item.appendChild(removeBtn);
+        this.previewsContainer?.appendChild(item);
+    },
+    
+    getDocIcon(filename) {
+        const ext = filename.split('.').pop()?.toLowerCase();
+        const icons = {
+            pdf: 'fa-file-pdf',
+            doc: 'fa-file-word',
+            docx: 'fa-file-word',
+            xls: 'fa-file-excel',
+            xlsx: 'fa-file-excel',
+            ppt: 'fa-file-powerpoint',
+            pptx: 'fa-file-powerpoint',
+            zip: 'fa-file-zipper',
+            rar: 'fa-file-zipper',
+            txt: 'fa-file-lines',
+            mp3: 'fa-file-audio',
+            wav: 'fa-file-audio'
+        };
+        return icons[ext] || 'fa-file';
+    },
+    
+    removeFile(id) {
+        this.stagedFiles = this.stagedFiles.filter(f => f.id !== id);
+        const item = this.previewsContainer?.querySelector(`[data-id="${id}"]`);
+        if (item) {
+            item.style.animation = 'fadeOut 0.2s ease forwards';
+            setTimeout(() => item.remove(), 200);
+        }
+        this.updateUI();
+    },
+    
+    clearAll() {
+        this.stagedFiles = [];
+        if (this.previewsContainer) {
+            this.previewsContainer.innerHTML = '';
+        }
+        this.updateUI();
+    },
+    
+    async sendAllFiles() {
+        if (this.stagedFiles.length === 0) return;
+        
+        const filesToSend = [...this.stagedFiles];
+        this.clearAll();
+        
+        for (const { file } of filesToSend) {
+            await MediaHandler.uploadFile(file);
+        }
+        
+        showToast(`${filesToSend.length} file(s) sent!`, 'success');
+    },
+    
+    updateUI() {
+        if (!this.stagingArea) return;
+        
+        if (this.stagedFiles.length > 0) {
+            this.stagingArea.classList.remove('hidden');
+            if (this.countLabel) {
+                this.countLabel.textContent = `${this.stagedFiles.length} file${this.stagedFiles.length > 1 ? 's' : ''} selected`;
+            }
+        } else {
+            this.stagingArea.classList.add('hidden');
+        }
+    }
+};
+
 function setupMediaHandlers() {
+    // Initialize File Staging Manager
+    FileStagingManager.init();
+    
     // Attach button - open file picker
     DOM.attachBtn?.addEventListener('click', () => {
         if (!AppState.selectedChat) {
@@ -1534,13 +1934,11 @@ function setupMediaHandlers() {
         DOM.fileInput?.click();
     });
     
-    // File input change
+    // File input change - Stage files instead of sending immediately
     DOM.fileInput?.addEventListener('change', async (e) => {
         const files = e.target.files;
         if (files.length > 0) {
-            for (const file of files) {
-                await MediaHandler.uploadFile(file);
-            }
+            FileStagingManager.addFiles(files);
             e.target.value = ''; // Reset input
         }
     });
@@ -1554,7 +1952,7 @@ function setupMediaHandlers() {
         DOM.cameraInput?.click();
     });
     
-    // Camera input change
+    // Camera input change - Send camera photos immediately (instant capture UX)
     DOM.cameraInput?.addEventListener('change', async (e) => {
         const files = e.target.files;
         if (files.length > 0) {
@@ -1598,10 +1996,10 @@ function applyChatAppearance() {
     const bubbleStyle = Settings.get('bubbleStyle');
     const chatBg = Settings.get('chatBackground');
     
-    // Apply bubble style to chat view
+    // Apply bubble style to chat view (only 2 styles: classic and bump)
     const chatView = DOM.chatView;
     if (chatView) {
-        chatView.classList.remove('bubble-rounded', 'bubble-cozy', 'bubble-compact', 'bubble-modern', 'bubble-snapchat', 'bubble-minimal', 'bubble-ios', 'bubble-discord');
+        chatView.classList.remove('bubble-classic', 'bubble-bump');
         chatView.classList.add(`bubble-${bubbleStyle}`);
     }
     
@@ -1702,6 +2100,148 @@ function getDocumentIcon(fileName) {
         json: 'fa-file-code'
     };
     return icons[ext] || 'fa-file';
+}
+
+// ========================================
+// LINK PREVIEW & MINI-BROWSER
+// Detect URLs and render as interactive cards
+// ========================================
+
+const LinkPreviewManager = {
+    urlRegex: /(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/gi,
+    
+    // Sites that typically block iframes - always show OG card for these
+    blockedDomains: [
+        'facebook.com', 'fb.com', 'twitter.com', 'x.com', 'instagram.com', 
+        'linkedin.com', 'tiktok.com', 'pinterest.com', 'reddit.com',
+        'amazon.com', 'google.com', 'youtube.com', 'youtu.be',
+        'github.com', 'spotify.com', 'twitch.tv', 'netflix.com',
+        'discord.com', 'whatsapp.com', 'telegram.org', 'medium.com'
+    ],
+    
+    // Detect URLs in text
+    detectUrls(text) {
+        if (!text) return [];
+        const matches = text.match(this.urlRegex);
+        return matches ? [...new Set(matches)] : [];
+    },
+    
+    // Check if site allows iframes
+    allowsIframe(url) {
+        try {
+            const hostname = new URL(url).hostname.toLowerCase();
+            return !this.blockedDomains.some(domain => 
+                hostname.includes(domain)
+            );
+        } catch {
+            return false;
+        }
+    },
+    
+    // Get domain from URL
+    getDomain(url) {
+        try {
+            return new URL(url).hostname.replace('www.', '');
+        } catch {
+            return url;
+        }
+    },
+    
+    // Get favicon URL
+    getFavicon(url) {
+        try {
+            const hostname = new URL(url).hostname;
+            return `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`;
+        } catch {
+            return '';
+        }
+    },
+    
+    // Render link as mini-browser card (with iframe) or OG card fallback
+    renderLinkCard(url) {
+        const domain = this.getDomain(url);
+        const favicon = this.getFavicon(url);
+        const cardId = 'link-' + Math.random().toString(36).substr(2, 9);
+        
+        if (this.allowsIframe(url)) {
+            // Mini-browser with iframe
+            return `
+                <div class="link-card" id="${cardId}">
+                    <div class="link-card-header">
+                        <img src="${favicon}" alt="" class="link-card-favicon" onerror="this.style.display='none'">
+                        <span class="link-card-domain">${domain}</span>
+                        <a href="${url}" target="_blank" rel="noopener noreferrer" class="link-card-open">
+                            <i class="fas fa-external-link-alt"></i> Open
+                        </a>
+                    </div>
+                    <div class="link-card-iframe-container">
+                        <iframe src="${url}" class="link-card-iframe" sandbox="allow-scripts allow-same-origin" loading="lazy"></iframe>
+                        <div class="link-card-overlay" onclick="toggleLinkInteraction('${cardId}')">
+                            <span><i class="fas fa-hand-pointer"></i> Click to interact</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Open Graph fallback card (simple link preview)
+            return `
+                <a href="${url}" target="_blank" rel="noopener noreferrer" class="og-card">
+                    <div class="og-card-content">
+                        <div class="og-card-title">${domain}</div>
+                        <div class="og-card-description">${url}</div>
+                        <div class="og-card-domain">
+                            <img src="${favicon}" alt="" style="width:12px;height:12px;border-radius:2px" onerror="this.style.display='none'">
+                            <span>${domain}</span>
+                        </div>
+                    </div>
+                </a>
+            `;
+        }
+    },
+    
+    // Convert text with URLs to HTML with link cards
+    processTextWithLinks(text) {
+        if (!text) return '';
+        
+        const urls = this.detectUrls(text);
+        if (urls.length === 0) return escapeHtml(text);
+        
+        // Escape the text first
+        let html = escapeHtml(text);
+        
+        // Replace URLs with clickable links + render cards after
+        let linkCards = '';
+        urls.forEach(url => {
+            const escapedUrl = escapeHtml(url);
+            html = html.replace(
+                escapedUrl, 
+                `<a href="${url}" target="_blank" rel="noopener noreferrer" class="inline-link">${escapedUrl}</a>`
+            );
+            // Add link card for first URL only to avoid clutter
+            if (linkCards === '') {
+                linkCards = this.renderLinkCard(url);
+            }
+        });
+        
+        return html + linkCards;
+    }
+};
+
+// Toggle iframe interaction
+function toggleLinkInteraction(cardId) {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    
+    const iframe = card.querySelector('.link-card-iframe');
+    const overlay = card.querySelector('.link-card-overlay');
+    
+    if (iframe.classList.contains('interactive')) {
+        iframe.classList.remove('interactive');
+        overlay.style.display = 'flex';
+    } else {
+        iframe.classList.add('interactive');
+        overlay.style.display = 'none';
+    }
 }
 
 // Audio Player Functions
@@ -1858,40 +2398,116 @@ function saveMedia(url, filename) {
     showToast('Download started!', 'success');
 }
 
-// Delete message
-async function deleteMessage(messageId) {
-    const currentUser = getCurrentUser();
-    if (!currentUser || !AppState.selectedChat) return;
+// ========================================
+// DELETE MESSAGE MODAL SYSTEM
+// ========================================
+let pendingDeleteMessageId = null;
+
+function showDeleteModal(messageId) {
+    pendingDeleteMessageId = messageId;
+    const modal = document.getElementById('delete-modal');
+    modal.classList.remove('hidden');
     
-    // Show confirmation
-    if (!confirm('Delete this message?')) return;
+    // Setup event listeners
+    document.getElementById('delete-for-me-btn').onclick = () => deleteForMe();
+    document.getElementById('delete-for-everyone-btn').onclick = () => deleteForEveryone();
+    document.getElementById('delete-cancel-btn').onclick = () => hideDeleteModal();
+    
+    // Close on overlay click
+    modal.onclick = (e) => {
+        if (e.target === modal) hideDeleteModal();
+    };
+}
+
+function hideDeleteModal() {
+    document.getElementById('delete-modal').classList.add('hidden');
+    pendingDeleteMessageId = null;
+}
+
+// Delete for Me - Only removes from local view
+async function deleteForMe() {
+    if (!pendingDeleteMessageId) return;
+    
+    const messageId = pendingDeleteMessageId;
+    hideDeleteModal();
+    
+    // Remove from local state only (not from server)
+    if (AppState.messages[AppState.selectedChat]) {
+        AppState.messages[AppState.selectedChat] = AppState.messages[AppState.selectedChat].filter(m => m.id !== messageId);
+    }
+    
+    // Remove from DOM with animation
+    const msgEl = document.querySelector(`[data-msg-id="${messageId}"]`);
+    if (msgEl) {
+        msgEl.style.animation = 'fadeOut 0.3s ease forwards';
+        setTimeout(() => msgEl.remove(), 300);
+    }
+    
+    // Store locally deleted messages
+    const deletedForMe = JSON.parse(localStorage.getItem('deletedForMe') || '[]');
+    deletedForMe.push(messageId);
+    localStorage.setItem('deletedForMe', JSON.stringify(deletedForMe));
+    
+    showToast('Message deleted for you', 'success');
+}
+
+// Delete for Everyone - Removes from server and notifies other user
+async function deleteForEveryone() {
+    if (!pendingDeleteMessageId) return;
+    
+    const messageId = pendingDeleteMessageId;
+    const currentUser = getCurrentUser();
+    hideDeleteModal();
+    
+    if (!currentUser || !AppState.selectedChat) return;
     
     try {
         const response = await fetch(`${CONFIG.API_URL}/messages/${messageId}`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: currentUser.id })
+            body: JSON.stringify({ 
+                userId: currentUser.id,
+                deleteType: 'everyone'
+            })
         });
         
         if (response.ok) {
-            // Remove from local state
+            // Update local state - mark as deleted, don't remove
             if (AppState.messages[AppState.selectedChat]) {
-                AppState.messages[AppState.selectedChat] = AppState.messages[AppState.selectedChat].filter(m => m.id !== messageId);
+                const msgIndex = AppState.messages[AppState.selectedChat].findIndex(m => m.id === messageId);
+                if (msgIndex !== -1) {
+                    AppState.messages[AppState.selectedChat][msgIndex].deletedForEveryone = true;
+                    AppState.messages[AppState.selectedChat][msgIndex].text = null;
+                    AppState.messages[AppState.selectedChat][msgIndex].fileUrl = null;
+                }
             }
             
-            // Remove from DOM
+            // Update DOM to show "You deleted this message"
             const msgEl = document.querySelector(`[data-msg-id="${messageId}"]`);
             if (msgEl) {
-                msgEl.style.animation = 'fadeOut 0.3s ease forwards';
-                setTimeout(() => msgEl.remove(), 300);
+                msgEl.classList.add('message-deleted');
+                const bubble = msgEl.querySelector('.message-bubble');
+                const content = msgEl.querySelector('.message-content') || bubble;
+                
+                if (content) {
+                    content.innerHTML = `
+                        <i class="fas fa-ban deleted-notice-icon"></i>
+                        <span>You deleted this message</span>
+                    `;
+                }
+                
+                // Remove action buttons
+                const actions = msgEl.querySelector('.message-actions');
+                if (actions) actions.remove();
             }
             
-            showToast('Message deleted', 'success');
+            showToast('Message deleted for everyone', 'success');
             
-            // Notify other user via socket
-            socket.emit('message_deleted', { 
+            // Notify other user via socket - they will see "message deleted" notice
+            socket.emit('message_deleted_everyone', { 
                 messageId, 
-                conversationId: AppState.selectedChat 
+                conversationId: AppState.selectedChat,
+                senderName: currentUser.fullName
             });
         } else {
             const result = await response.json();
@@ -1901,6 +2517,11 @@ async function deleteMessage(messageId) {
         console.error('Delete error:', error);
         showToast('Could not delete message', 'error');
     }
+}
+
+// Legacy delete function - now shows modal
+async function deleteMessage(messageId) {
+    showDeleteModal(messageId);
 }
 
 async function showUserProfile(userId) {
@@ -1988,6 +2609,264 @@ function renderNewChatUsers(users) {
             openChat(item.dataset.userId);
         });
     });
+}
+
+// ========================================
+// INBOX TABS
+// ========================================
+
+function initInboxTabs() {
+    const tabs = document.querySelectorAll('.inbox-tab');
+    const contents = document.querySelectorAll('.inbox-tab-content');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetTab = tab.dataset.tab;
+            
+            // Update tab states
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Update content visibility
+            contents.forEach(c => c.classList.remove('active'));
+            document.getElementById(`inbox-${targetTab}`)?.classList.add('active');
+        });
+    });
+}
+
+function updateRequestsBadge() {
+    const badge = document.getElementById('requests-badge');
+    const count = AppState.friendRequests?.length || 0;
+    if (badge) {
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'flex' : 'none';
+    }
+}
+
+// ========================================
+// INBOX FUNCTIONS
+// ========================================
+
+// Inbox message data
+const inboxMessages = {
+    welcome: {
+        sender: 'Bump Team',
+        verified: true,
+        avatar: 'bump',
+        time: 'Today at 12:00 PM',
+        messages: [
+            {
+                content: `
+                    <p>Hey there! 👋</p>
+                    <p>Welcome to <strong>Bump</strong> - your new favorite way to chat!</p>
+                `,
+                time: 'Today at 12:00 PM'
+            },
+            {
+                content: `
+                    <p><strong>Here's how to get started:</strong></p>
+                    <ul>
+                        <li>🔍 Search for friends by username</li>
+                        <li>➕ Send friend requests to connect</li>
+                        <li>💬 Start chatting with photos, videos & more</li>
+                        <li>⚙️ Customize your profile and avatar</li>
+                    </ul>
+                `,
+                time: 'Today at 12:00 PM'
+            },
+            {
+                content: `
+                    <div class="highlight">
+                        💡 <strong>Pro tip:</strong> Check the Settings to customize your chat bubble style and notification preferences!
+                    </div>
+                    <p>Have fun connecting! 🚀</p>
+                `,
+                time: 'Today at 12:01 PM'
+            }
+        ]
+    },
+    update: {
+        sender: 'System',
+        verified: false,
+        avatar: 'system',
+        time: 'Dec 22, 2025',
+        messages: [
+            {
+                content: `
+                    <p><strong>🎊 Bump Version 1.0 - Release Notes</strong></p>
+                    <p>We're excited to announce the first official release of Bump!</p>
+                `,
+                time: 'Dec 22, 2025 at 10:00 AM'
+            },
+            {
+                content: `
+                    <p><strong>What's new in v1.0:</strong></p>
+                    <ul>
+                        <li>✅ Friend request system</li>
+                        <li>📬 Inbox - All notifications in one place</li>
+                        <li>🎨 Beautiful new UI design</li>
+                        <li>🐛 Bug report feature</li>
+                        <li>🔗 Clickable links in messages</li>
+                        <li>🗑️ Delete for everyone</li>
+                        <li>📷 Media sharing (photos, videos, files)</li>
+                        <li>🎤 Voice notes</li>
+                    </ul>
+                `,
+                time: 'Dec 22, 2025 at 10:00 AM'
+            },
+            {
+                content: `
+                    <p>Thank you for being an early user of Bump! Your feedback helps us improve.</p>
+                    <p>— The Bump Team 💜</p>
+                `,
+                time: 'Dec 22, 2025 at 10:01 AM'
+            }
+        ]
+    }
+};
+
+// Open inbox viewer with thread-style messages
+function openInboxViewer(messageId) {
+    const viewer = document.getElementById('inbox-viewer');
+    const content = document.getElementById('inbox-viewer-content');
+    const senderEl = document.getElementById('inbox-viewer-sender');
+    const badgeEl = document.getElementById('inbox-viewer-badge');
+    
+    const message = inboxMessages[messageId];
+    if (!message) return;
+    
+    // Update header
+    senderEl.textContent = message.sender;
+    if (message.verified) {
+        badgeEl.innerHTML = '<i class="fas fa-check-circle"></i> Verified';
+        badgeEl.style.display = 'flex';
+    } else {
+        badgeEl.style.display = 'none';
+    }
+    
+    // Build thread content
+    let html = '';
+    message.messages.forEach((msg, index) => {
+        const isFirst = index === 0;
+        html += `
+            <div class="thread-message">
+                ${isFirst ? `
+                    <div class="thread-avatar">
+                        <div class="thread-avatar-img ${message.avatar === 'system' ? 'system' : ''}">
+                            ${message.avatar === 'bump' ? '<span>B</span>' : '<i class="fas fa-bell"></i>'}
+                        </div>
+                    </div>
+                ` : '<div class="thread-avatar" style="width: 44px;"></div>'}
+                <div class="thread-body">
+                    ${isFirst ? `
+                        <div class="thread-header">
+                            <span class="thread-sender">${message.sender}</span>
+                            ${message.verified ? '<i class="fas fa-check-circle thread-verified"></i>' : ''}
+                            <span class="thread-time">${msg.time}</span>
+                        </div>
+                    ` : ''}
+                    <div class="thread-content">${msg.content}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    // Add reactions
+    html += `
+        <div class="thread-reactions">
+            <button class="thread-reaction" onclick="this.classList.toggle('active')">👍 <span>1</span></button>
+            <button class="thread-reaction" onclick="this.classList.toggle('active')">❤️ <span>2</span></button>
+            <button class="thread-reaction" onclick="this.classList.toggle('active')">🎉 <span>3</span></button>
+        </div>
+    `;
+    
+    content.innerHTML = html;
+    viewer.classList.remove('hidden');
+    
+    // Mark as read
+    document.querySelectorAll('.inbox-item').forEach(item => {
+        if (item.onclick && item.onclick.toString().includes(messageId)) {
+            item.classList.remove('unread');
+        }
+    });
+}
+
+// Close inbox viewer
+function closeInboxViewer() {
+    const viewer = document.getElementById('inbox-viewer');
+    viewer.classList.add('hidden');
+}
+
+// Toggle inbox item expansion (legacy - for backwards compatibility)
+function toggleInboxItem(element) {
+    const isExpanded = element.classList.contains('expanded');
+    
+    // Close all other expanded items
+    document.querySelectorAll('.inbox-item-wrap.expanded').forEach(item => {
+        if (item !== element) {
+            item.classList.remove('expanded');
+        }
+    });
+    
+    // Toggle current item
+    element.classList.toggle('expanded');
+    
+    // Mark as read
+    const inboxItem = element.querySelector('.inbox-item');
+    if (inboxItem) {
+        inboxItem.classList.remove('unread');
+    }
+}
+
+// ========================================
+// BUG REPORT MODAL
+// ========================================
+
+function showBugReportModal() {
+    const modal = document.getElementById('bug-report-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        // Clear form
+        document.getElementById('bug-description')?.value && (document.getElementById('bug-description').value = '');
+        document.getElementById('bug-steps')?.value && (document.getElementById('bug-steps').value = '');
+    }
+}
+
+function hideBugReportModal() {
+    const modal = document.getElementById('bug-report-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+function handleBugReport(e) {
+    e.preventDefault();
+    
+    const description = document.getElementById('bug-description')?.value;
+    const steps = document.getElementById('bug-steps')?.value;
+    const severity = document.getElementById('bug-severity')?.value;
+    
+    if (!description) {
+        showToast('Please describe the bug', 'error');
+        return;
+    }
+    
+    // In a real app, this would send to a server
+    // For now, we'll just show a success message
+    const currentUser = getCurrentUser();
+    const report = {
+        user: currentUser?.username || 'Anonymous',
+        description,
+        steps,
+        severity,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent
+    };
+    
+    console.log('Bug Report Submitted:', report);
+    
+    hideBugReportModal();
+    showToast('Bug report submitted! Thank you for your feedback 💜', 'success');
 }
 
 // ========================================
@@ -2114,6 +2993,15 @@ function setupEventListeners() {
     
     // File & Media handlers
     setupMediaHandlers();
+    
+    // Inbox tabs
+    initInboxTabs();
+    
+    // Bug report form
+    document.getElementById('bug-report-form')?.addEventListener('submit', handleBugReport);
+    document.getElementById('bug-report-modal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'bug-report-modal') hideBugReportModal();
+    });
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
@@ -2145,6 +3033,8 @@ async function initApp() {
 
         switchView('chats');
         await loadConversations();
+        await loadFriendRequests();
+        await loadFriends();
         updateProfileView();
         loadSettings();
     } else {
