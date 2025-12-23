@@ -138,7 +138,7 @@ app.get('/api/health', (req, res) => {
 // Register new user
 app.post('/api/register', async (req, res) => {
     try {
-        const { username, fullName, email, password, avatarStyle } = req.body;
+        const { username, fullName, email, password, avatarStyle, gender } = req.body;
 
         // Validation
         if (!username || !fullName || !email || !password) {
@@ -172,6 +172,7 @@ app.post('/api/register', async (req, res) => {
             status: 'offline',
             avatar: generateAvatar(username, style),
             avatarStyle: style,
+            gender: gender || 'other',
             createdAt: new Date().toISOString(),
             lastSeen: new Date().toISOString()
         };
@@ -270,6 +271,67 @@ app.put('/api/users/:id', (req, res) => {
 
     saveDatabase(db);
     res.json(sanitizeUser(db.users[userIndex]));
+});
+
+// Delete user account
+app.delete('/api/users/:id', (req, res) => {
+    const userId = req.params.id;
+    const userIndex = db.users.findIndex(u => u.id === userId);
+    
+    if (userIndex === -1) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+    
+    try {
+        // Remove user
+        db.users.splice(userIndex, 1);
+        
+        // Remove all friend connections
+        db.friends = db.friends?.filter(f => f.user1 !== userId && f.user2 !== userId) || [];
+        
+        // Remove all friend requests
+        db.friendRequests = db.friendRequests?.filter(r => r.from !== userId && r.to !== userId) || [];
+        
+        // Remove user's conversations and messages
+        const userConversations = Object.values(db.conversations || {}).filter(c => 
+            c.participants && c.participants.includes(userId)
+        );
+        
+        userConversations.forEach(conv => {
+            // Delete messages for this conversation
+            if (db.messages[conv.id]) {
+                // Delete associated files
+                db.messages[conv.id].forEach(msg => {
+                    if (msg.fileUrl && msg.senderId === userId) {
+                        const filePath = path.join(__dirname, msg.fileUrl);
+                        if (fs.existsSync(filePath)) {
+                            try {
+                                fs.unlinkSync(filePath);
+                            } catch (e) {
+                                console.error('Error deleting file:', e);
+                            }
+                        }
+                    }
+                });
+                delete db.messages[conv.id];
+            }
+        });
+        
+        // Remove conversations
+        userConversations.forEach(conv => {
+            if (conv.id && db.conversations[conv.id]) {
+                delete db.conversations[conv.id];
+            }
+        });
+        
+        saveDatabase(db);
+        
+        console.log(`User ${userId} account deleted successfully`);
+        res.json({ success: true, message: 'Account deleted successfully' });
+    } catch (error) {
+        console.error('Delete account error:', error);
+        res.status(500).json({ error: 'Could not delete account' });
+    }
 });
 
 // ========================================
@@ -406,6 +468,40 @@ app.post('/api/friends/reject', (req, res) => {
     
     db.friendRequests.splice(requestIndex, 1);
     saveDatabase(db);
+    
+    res.json({ success: true });
+});
+
+// Remove friend (unfriend)
+app.post('/api/friends/remove', (req, res) => {
+    const { userId, friendId } = req.body;
+    
+    if (!userId || !friendId) {
+        return res.status(400).json({ error: 'Missing userId or friendId' });
+    }
+    
+    // Find and remove the friendship
+    const friendshipIndex = (db.friends || []).findIndex(f => 
+        (f.user1 === userId && f.user2 === friendId) ||
+        (f.user1 === friendId && f.user2 === userId)
+    );
+    
+    if (friendshipIndex === -1) {
+        return res.status(404).json({ error: 'Friendship not found' });
+    }
+    
+    db.friends.splice(friendshipIndex, 1);
+    saveDatabase(db);
+    
+    // Notify the friend via socket if online
+    const friendSocketId = userSockets.get(friendId);
+    if (friendSocketId) {
+        const user = db.users.find(u => u.id === userId);
+        io.to(friendSocketId).emit('friend_removed', {
+            userId: userId,
+            user: user ? sanitizeUser(user) : null
+        });
+    }
     
     res.json({ success: true });
 });
@@ -860,6 +956,79 @@ io.on('connection', (socket) => {
             user.status = status;
             saveDatabase(db);
             io.emit('user_status_changed', { userId, status });
+        }
+    });
+
+    // Mute user
+    socket.on('mute_user', ({ userId, targetUserId }) => {
+        const user = db.users.find(u => u.id === userId);
+        if (user) {
+            if (!user.mutedUsers) user.mutedUsers = [];
+            if (!user.mutedUsers.includes(targetUserId)) {
+                user.mutedUsers.push(targetUserId);
+                saveDatabase(db);
+            }
+            socket.emit('user_muted', { targetUserId, success: true });
+        }
+    });
+
+    // Unmute user
+    socket.on('unmute_user', ({ userId, targetUserId }) => {
+        const user = db.users.find(u => u.id === userId);
+        if (user && user.mutedUsers) {
+            user.mutedUsers = user.mutedUsers.filter(id => id !== targetUserId);
+            saveDatabase(db);
+            socket.emit('user_unmuted', { targetUserId, success: true });
+        }
+    });
+
+    // Block user
+    socket.on('block_user', ({ userId, targetUserId }) => {
+        const user = db.users.find(u => u.id === userId);
+        if (user) {
+            if (!user.blockedUsers) user.blockedUsers = [];
+            if (!user.blockedUsers.includes(targetUserId)) {
+                user.blockedUsers.push(targetUserId);
+                
+                // Also remove from friends
+                db.friends = db.friends.filter(f => 
+                    !((f.user1 === userId && f.user2 === targetUserId) ||
+                      (f.user1 === targetUserId && f.user2 === userId))
+                );
+                
+                // Remove pending friend requests
+                db.friendRequests = db.friendRequests.filter(r =>
+                    !((r.from === userId && r.to === targetUserId) ||
+                      (r.from === targetUserId && r.to === userId))
+                );
+                
+                saveDatabase(db);
+            }
+            socket.emit('user_blocked', { targetUserId, success: true });
+        }
+    });
+
+    // Unblock user
+    socket.on('unblock_user', ({ userId, targetUserId }) => {
+        const user = db.users.find(u => u.id === userId);
+        if (user && user.blockedUsers) {
+            user.blockedUsers = user.blockedUsers.filter(id => id !== targetUserId);
+            saveDatabase(db);
+            socket.emit('user_unblocked', { targetUserId, success: true });
+        }
+    });
+
+    // Update profile
+    socket.on('updateProfile', (data) => {
+        const { userId, fullname, email, bio, status } = data;
+        const user = db.users.find(u => u.id === userId);
+        if (user) {
+            if (fullname !== undefined) user.fullName = fullname;
+            if (email !== undefined) user.email = email;
+            if (bio !== undefined) user.bio = bio;
+            if (status !== undefined) user.status = status;
+            saveDatabase(db);
+            socket.emit('profile_updated', { user: sanitizeUser(user) });
         }
     });
 

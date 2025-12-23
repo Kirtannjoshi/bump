@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
     <meta name="theme-color" content="#7C3AED">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -90,28 +91,31 @@
                             <input type="password" id="signup-password" class="form-input" required autocomplete="new-password" minlength="6">
                         </div>
                         
+                        <!-- Gender Selection -->
+                        <div class="form-group">
+                            <label class="form-label">GENDER</label>
+                            <div class="gender-selection">
+                                <button type="button" class="gender-btn active" data-gender="male">
+                                    <i class="fas fa-mars"></i>
+                                    <span>Male</span>
+                                </button>
+                                <button type="button" class="gender-btn" data-gender="female">
+                                    <i class="fas fa-venus"></i>
+                                    <span>Female</span>
+                                </button>
+                                <button type="button" class="gender-btn" data-gender="other">
+                                    <i class="fas fa-genderless"></i>
+                                    <span>Other</span>
+                                </button>
+                            </div>
+                            <input type="hidden" id="selected-gender" value="male">
+                        </div>
+                        
                         <!-- Avatar Selection -->
                         <div class="form-group">
                             <label class="form-label">CHOOSE AVATAR</label>
-                            <div class="avatar-types-row">
-                                <button type="button" class="avatar-type-btn active" data-style="avataaars">
-                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=default" alt="">
-                                </button>
-                                <button type="button" class="avatar-type-btn" data-style="adventurer">
-                                    <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=default" alt="">
-                                </button>
-                                <button type="button" class="avatar-type-btn" data-style="big-smile">
-                                    <img src="https://api.dicebear.com/7.x/big-smile/svg?seed=default" alt="">
-                                </button>
-                                <button type="button" class="avatar-type-btn" data-style="lorelei">
-                                    <img src="https://api.dicebear.com/7.x/lorelei/svg?seed=default" alt="">
-                                </button>
-                                <button type="button" class="avatar-type-btn" data-style="notionists">
-                                    <img src="https://api.dicebear.com/7.x/notionists/svg?seed=default" alt="">
-                                </button>
-                                <button type="button" class="avatar-type-btn" data-style="personas">
-                                    <img src="https://api.dicebear.com/7.x/personas/svg?seed=default" alt="">
-                                </button>
+                            <div class="avatar-types-row" id="avatar-types-row">
+                                <!-- Avatars will be populated based on gender -->
                             </div>
                             <input type="hidden" id="selected-avatar-style" value="avataaars">
                         </div>
@@ -131,6 +135,13 @@
 
     <!-- Main App Container -->
     <div id="app-container" class="app-container hidden">
+        <!-- Mobile Top Header -->
+        <header class="mobile-header">
+            <div class="mobile-header-content">
+                <span class="mobile-logo">Bump</span>
+            </div>
+        </header>
+        
         <!-- Navigation Rail -->
         <nav class="nav-rail">
             <div class="nav-logo">
@@ -239,7 +250,7 @@
                 
                 <!-- All Tab Content -->
                 <div class="inbox-tab-content active" id="inbox-all">
-                    <!-- Bump Welcome Message -->
+                    <!-- Personalized Welcome Message -->
                     <div class="inbox-item bump-official unread" onclick="openInboxViewer('welcome')">
                         <div class="inbox-item-avatar">
                             <div class="bump-avatar-mini">
@@ -252,26 +263,45 @@
                                 <span class="inbox-item-sender">Bump Team</span>
                                 <span class="inbox-item-time">Now</span>
                             </div>
-                            <p class="inbox-item-subject">Welcome to Bump! 🎉</p>
-                            <p class="inbox-item-preview">Thanks for joining! Start by adding friends...</p>
+                            <p class="inbox-item-subject" id="welcome-subject">Welcome to Bump! 🎉</p>
+                            <p class="inbox-item-preview" id="welcome-preview">Your journey starts now. Here's everything you need to know...</p>
                         </div>
                         <i class="fas fa-chevron-right inbox-arrow"></i>
                     </div>
                     
-                    <!-- System Update -->
-                    <div class="inbox-item system" onclick="openInboxViewer('update')">
+                    <!-- Update Notification -->
+                    <div class="inbox-item bump-official" onclick="openInboxViewer('update')">
                         <div class="inbox-item-avatar">
-                            <div class="system-avatar">
-                                <i class="fas fa-gift"></i>
+                            <div class="bump-avatar-mini">
+                                <span>B</span>
+                            </div>
+                            <i class="fas fa-check-circle verified-badge"></i>
+                        </div>
+                        <div class="inbox-item-content">
+                            <div class="inbox-item-header">
+                                <span class="inbox-item-sender">Bump Updates</span>
+                                <span class="inbox-item-time">Dec 22</span>
+                            </div>
+                            <p class="inbox-item-subject">New Features Just Dropped! ✨</p>
+                            <p class="inbox-item-preview">Check out what's new in Bump v1.0...</p>
+                        </div>
+                        <i class="fas fa-chevron-right inbox-arrow"></i>
+                    </div>
+                    
+                    <!-- Tips & Tricks -->
+                    <div class="inbox-item bump-official" onclick="openInboxViewer('tips')">
+                        <div class="inbox-item-avatar">
+                            <div class="bump-avatar-mini tips">
+                                <i class="fas fa-lightbulb"></i>
                             </div>
                         </div>
                         <div class="inbox-item-content">
                             <div class="inbox-item-header">
-                                <span class="inbox-item-sender">System</span>
-                                <span class="inbox-item-time">Dec 22</span>
+                                <span class="inbox-item-sender">Bump Tips</span>
+                                <span class="inbox-item-time">Yesterday</span>
                             </div>
-                            <p class="inbox-item-subject">Version 1.0 is here! 🎊</p>
-                            <p class="inbox-item-preview">New features: Friend requests, Inbox, and more!</p>
+                            <p class="inbox-item-subject" id="tips-subject">Unlock the full Bump experience 🔓</p>
+                            <p class="inbox-item-preview">Quick tips to get the most out of Bump...</p>
                         </div>
                         <i class="fas fa-chevron-right inbox-arrow"></i>
                     </div>
@@ -323,215 +353,117 @@
                 </div>
             </div>
 
-            <!-- Profile Sidebar -->
+            <!-- Profile Sidebar - Navigation -->
             <div id="profile-sidebar" class="sidebar-content">
                 <div class="sidebar-header">
-                    <h2>My Profile</h2>
+                    <h2>Profile</h2>
                 </div>
-                <div class="profile-view">
-                    <div class="profile-avatar-large">
-                        <img id="my-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default" alt="My Avatar">
-                        <button class="btn-icon avatar-edit" id="change-avatar-btn">
-                            <i class="fas fa-camera"></i>
-                        </button>
-                    </div>
-                    <div class="profile-info">
-                        <div class="profile-field">
-                            <label>Full Name</label>
-                            <input type="text" id="profile-fullname" class="profile-input">
-                        </div>
-                        <div class="profile-field">
-                            <label>Username</label>
-                            <input type="text" id="profile-username" class="profile-input" disabled>
-                        </div>
-                        <div class="profile-field">
-                            <label>Email</label>
-                            <input type="email" id="profile-email" class="profile-input">
-                        </div>
-                        <div class="profile-field">
-                            <label>Bio</label>
-                            <textarea id="profile-bio" class="profile-input" placeholder="Write something about yourself..."></textarea>
-                        </div>
-                        <div class="profile-field">
-                            <label>Status</label>
-                            <select id="profile-status" class="profile-input">
-                                <option value="online">🟢 Online</option>
-                                <option value="away">🟡 Away</option>
-                                <option value="busy">🔴 Busy</option>
-                                <option value="offline">⚫ Offline</option>
-                            </select>
-                        </div>
-                        <button class="btn-primary" id="save-profile-btn">Save Changes</button>
-                    </div>
+                
+                <!-- Profile User Preview -->
+                <div class="profile-sidebar-user">
+                    <img id="sidebar-profile-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default" alt="My Avatar" class="profile-sidebar-avatar">
+                    <button class="profile-sidebar-edit-btn" onclick="document.getElementById('avatar-picker-modal').classList.remove('hidden')">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                </div>
+                <div class="profile-sidebar-info">
+                    <span class="profile-sidebar-name" id="sidebar-profile-name">Display Name</span>
+                    <span class="profile-sidebar-wave" id="sidebar-profile-wave">~username</span>
+                </div>
+                
+                <!-- Profile Navigation -->
+                <div class="profile-sidebar-nav">
+                    <button class="profile-sidebar-item active" data-profile-tab="edit" onclick="toggleProfileEditSection(true)">
+                        <i class="fas fa-edit"></i>
+                        <span>Edit Profile</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- Settings Sidebar -->
+            <!-- Settings Sidebar - Navigation List -->
             <div id="settings-sidebar" class="sidebar-content">
                 <div class="sidebar-header">
                     <h2>Settings</h2>
                 </div>
-                <div class="settings-view">
-                    <div class="settings-section">
-                        <h3>Notifications</h3>
-                        <div class="settings-item">
-                            <div class="settings-item-info">
-                                <i class="fas fa-bell"></i>
-                                <span>Push Notifications</span>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="notifications-toggle" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                        <div class="settings-item">
-                            <div class="settings-item-info">
-                                <i class="fas fa-volume-up"></i>
-                                <span>Message Sounds</span>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="sounds-toggle" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                        <div class="settings-item sound-type-item">
-                            <div class="settings-item-info">
-                                <i class="fas fa-music"></i>
-                                <span>Sound Type</span>
-                            </div>
-                            <select id="sound-type-select" class="settings-select">
-                                <option value="pop">Pop</option>
-                                <option value="ding">Ding</option>
-                                <option value="chime">Chime</option>
-                                <option value="bubble">Bubble</option>
-                            </select>
-                        </div>
-                        <div class="settings-item">
-                            <button class="test-sound-btn" id="test-sound-btn">
-                                <i class="fas fa-play"></i>
-                                <span>Test Sound</span>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="settings-section">
-                        <h3>Privacy</h3>
-                        <div class="settings-item">
-                            <div class="settings-item-info">
-                                <i class="fas fa-eye"></i>
-                                <span>Show Online Status</span>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="online-status-toggle" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                        <div class="settings-item">
-                            <div class="settings-item-info">
-                                <i class="fas fa-check-double"></i>
-                                <span>Read Receipts</span>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="read-receipts-toggle" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div class="settings-section">
-                        <h3>Chat Appearance</h3>
-                        <div class="settings-item">
-                            <div class="settings-item-info">
-                                <i class="fas fa-comment"></i>
-                                <span>Bubble Style</span>
-                            </div>
-                            <select id="bubble-style-select" class="settings-select">
-                                <option value="classic">💬 Classic</option>
-                                <option value="bump">✨ Bump Signature</option>
-                            </select>
-                        </div>
-                        <div class="settings-item">
-                            <div class="settings-item-info">
-                                <i class="fas fa-palette"></i>
-                                <span>Chat Background</span>
-                            </div>
-                            <select id="chat-bg-select" class="settings-select">
-                                <option value="default">Default Dark</option>
-                                <option value="darker">Darker</option>
-                                <option value="gradient">Gradient</option>
-                                <option value="pattern">Pattern</option>
-                                <option value="midnight">Midnight Blue</option>
-                                <option value="forest">Forest Green</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="settings-section">
-                        <h3>Avatar Style</h3>
-                        <div class="settings-avatar-grid" id="settings-avatar-grid">
-                            <button type="button" class="avatar-style-btn" data-style="avataaars">
-                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=me" alt="Avataaars">
-                            </button>
-                            <button type="button" class="avatar-style-btn" data-style="adventurer">
-                                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=me" alt="Adventurer">
-                            </button>
-                            <button type="button" class="avatar-style-btn" data-style="big-smile">
-                                <img src="https://api.dicebear.com/7.x/big-smile/svg?seed=me" alt="Big Smile">
-                            </button>
-                            <button type="button" class="avatar-style-btn" data-style="lorelei">
-                                <img src="https://api.dicebear.com/7.x/lorelei/svg?seed=me" alt="Lorelei">
-                            </button>
-                            <button type="button" class="avatar-style-btn" data-style="notionists">
-                                <img src="https://api.dicebear.com/7.x/notionists/svg?seed=me" alt="Notionists">
-                            </button>
-                            <button type="button" class="avatar-style-btn" data-style="personas">
-                                <img src="https://api.dicebear.com/7.x/personas/svg?seed=me" alt="Personas">
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="settings-section">
-                        <h3>About</h3>
-                        <div class="settings-item clickable" id="about-app">
-                            <div class="settings-item-info">
-                                <i class="fas fa-info-circle"></i>
-                                <span>About Bump</span>
-                            </div>
-                            <i class="fas fa-chevron-right"></i>
-                        </div>
-                        <div class="settings-item">
-                            <div class="settings-item-info">
-                                <i class="fas fa-code-branch"></i>
-                                <span>Version</span>
-                            </div>
-                            <span class="settings-value">1.0.0</span>
-                        </div>
-                    </div>
-                    
-                    <div class="settings-section">
-                        <h3>Account</h3>
-                        <button class="btn-danger" id="logout-settings-btn">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Logout</span>
-                        </button>
+                
+                <!-- Settings User Info -->
+                <div class="settings-sidebar-user">
+                    <img id="sidebar-settings-avatar" src="" alt="" class="settings-sidebar-avatar">
+                    <div class="settings-sidebar-user-info">
+                        <span class="settings-sidebar-username" id="sidebar-settings-username">Username</span>
+                        <span class="settings-sidebar-wave" id="sidebar-settings-wave">~username</span>
                     </div>
                 </div>
+                
+                <!-- Settings Navigation -->
+                <div class="settings-sidebar-nav-group">
+                    <span class="settings-sidebar-label">USER SETTINGS</span>
+                    <button class="settings-sidebar-item active" data-settings-tab="account" onclick="switchMainSettingsTab('account')">
+                        <i class="fas fa-user"></i>
+                        <span>My Account</span>
+                    </button>
+                    <button class="settings-sidebar-item" data-settings-tab="profile" onclick="switchMainSettingsTab('profile')">
+                        <i class="fas fa-id-card"></i>
+                        <span>Profile</span>
+                    </button>
+                    <button class="settings-sidebar-item" data-settings-tab="privacy" onclick="switchMainSettingsTab('privacy')">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Privacy & Safety</span>
+                    </button>
+                </div>
+                
+                <div class="settings-sidebar-nav-group">
+                    <span class="settings-sidebar-label">APP SETTINGS</span>
+                    <button class="settings-sidebar-item" data-settings-tab="appearance" onclick="switchMainSettingsTab('appearance')">
+                        <i class="fas fa-palette"></i>
+                        <span>Appearance</span>
+                    </button>
+                    <button class="settings-sidebar-item" data-settings-tab="notifications" onclick="switchMainSettingsTab('notifications')">
+                        <i class="fas fa-bell"></i>
+                        <span>Notifications</span>
+                    </button>
+                    <button class="settings-sidebar-item" data-settings-tab="chat" onclick="switchMainSettingsTab('chat')">
+                        <i class="fas fa-comment"></i>
+                        <span>Chat</span>
+                    </button>
+                </div>
+                
+                <div class="settings-sidebar-nav-group">
+                    <span class="settings-sidebar-label">ABOUT</span>
+                    <button class="settings-sidebar-item" data-settings-tab="about" onclick="switchMainSettingsTab('about')">
+                        <i class="fas fa-info-circle"></i>
+                        <span>About Bump</span>
+                    </button>
+                </div>
+                
+                <div class="settings-sidebar-divider"></div>
+                
+                <button class="settings-sidebar-item danger" onclick="handleLogout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Log Out</span>
+                </button>
+                <button class="settings-sidebar-item danger" onclick="document.getElementById('delete-account-modal').classList.remove('hidden')">
+                    <i class="fas fa-trash"></i>
+                    <span>Delete Account</span>
+                </button>
             </div>
         </aside>
 
-        <!-- Main Chat Window -->
-        <main class="chat-window">
-            <!-- Empty State -->
-            <div id="empty-state" class="empty-state">
-                <div class="empty-icon">
-                    <i class="fas fa-comments"></i>
+        <!-- Main Content Area -->
+        <main class="main-content-area">
+            <!-- ========== CHATS VIEW ========== -->
+            <div class="main-view active" id="main-chats-view">
+                <!-- Empty State -->
+                <div id="empty-state" class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h2>Welcome to Bump!</h2>
+                    <p>Select a chat or search for users to start messaging</p>
                 </div>
-                <h2>Welcome to Bump!</h2>
-                <p>Select a chat or search for users to start messaging</p>
-            </div>
 
-            <!-- Chat View -->
-            <div id="chat-view" class="chat-view hidden">
+                <!-- Chat View -->
+                <div id="chat-view" class="chat-view hidden">
                 <div class="chat-header">
                     <button class="btn-icon mobile-back-btn" id="mobile-back-btn">
                         <i class="fas fa-arrow-left"></i>
@@ -540,6 +472,7 @@
                         <img id="chat-avatar" src="" alt="User Avatar" class="chat-avatar">
                         <div class="chat-user-details">
                             <h3 id="chat-username"></h3>
+                            <span id="chat-wave-id" class="user-wave-id"></span>
                             <span id="chat-status" class="user-status"></span>
                         </div>
                     </div>
@@ -556,23 +489,21 @@
                     <!-- Messages will be dynamically added -->
                 </div>
                 <div class="chat-input-container">
-                    <div class="input-actions-left">
-                        <button class="btn-icon" id="attach-btn" title="Attach File">
-                            <i class="fas fa-paperclip"></i>
-                        </button>
-                        <button class="btn-icon" id="camera-btn" title="Take Photo">
+                    <button class="btn-icon input-side-btn" id="attach-btn" title="Attach File">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <div class="input-wrapper-main">
+                        <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
+                        <button class="btn-icon input-emoji-btn" id="camera-btn" title="Camera">
                             <i class="fas fa-camera"></i>
                         </button>
                     </div>
-                    <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
-                    <div class="input-actions-right">
-                        <button class="btn-icon" id="voice-btn" title="Voice Note">
-                            <i class="fas fa-microphone"></i>
-                        </button>
-                        <button class="btn-icon btn-send" id="send-btn" title="Send">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </div>
+                    <button class="btn-icon input-action-btn" id="voice-btn" title="Voice Note">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <button class="btn-icon input-action-btn btn-send hidden" id="send-btn" title="Send">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
                 </div>
                 
                 <!-- File Staging Area (Hidden by default) -->
@@ -600,39 +531,561 @@
                 <input type="file" id="file-input" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.zip" multiple hidden>
                 <input type="file" id="camera-input" accept="image/*" capture="environment" hidden>
             </div>
-        </main>
+            </div><!-- End main-chats-view -->
 
-        <!-- Profile Panel (Right Sidebar) -->
-        <aside class="profile-panel hidden" id="profile-panel">
-            <div class="panel-header">
-                <button class="btn-icon" id="close-panel-btn">
-                    <i class="fas fa-times"></i>
-                </button>
-                <h3>User Profile</h3>
-            </div>
-            <div class="panel-content">
-                <div class="panel-avatar">
-                    <img id="panel-avatar-img" src="" alt="User Avatar">
+            <!-- ========== INBOX VIEW ========== -->
+            <div class="main-view" id="main-inbox-view">
+                <div class="inbox-main-content">
+                    <div class="inbox-main-header">
+                        <h1>Inbox</h1>
+                        <p class="inbox-main-subtitle">Messages, notifications, and friend requests</p>
+                    </div>
+                    
+                    <!-- Inbox Tabs -->
+                    <div class="inbox-main-tabs">
+                        <button class="inbox-main-tab active" data-inbox-tab="all">
+                            <i class="fas fa-inbox"></i>
+                            <span>All Messages</span>
+                        </button>
+                        <button class="inbox-main-tab" data-inbox-tab="requests">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Friend Requests</span>
+                            <span class="inbox-tab-badge" id="main-requests-badge">0</span>
+                        </button>
+                        <button class="inbox-main-tab" data-inbox-tab="friends">
+                            <i class="fas fa-users"></i>
+                            <span>Friends</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Inbox Tab Contents -->
+                    <div class="inbox-main-tab-content active" id="main-inbox-all">
+                        <div class="inbox-messages-grid">
+                            <!-- Welcome Message -->
+                            <div class="inbox-message-card bump-official unread" onclick="openInboxViewer('welcome')">
+                                <div class="inbox-card-avatar">
+                                    <div class="bump-avatar-large">B</div>
+                                    <i class="fas fa-check-circle verified-icon"></i>
+                                </div>
+                                <div class="inbox-card-content">
+                                    <div class="inbox-card-header">
+                                        <span class="inbox-card-sender">Bump Team</span>
+                                        <span class="inbox-card-time">Now</span>
+                                    </div>
+                                    <h3 class="inbox-card-subject">Welcome to Bump! 🎉</h3>
+                                    <p class="inbox-card-preview">Your journey starts now. Here's everything you need to know...</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Update Message -->
+                            <div class="inbox-message-card bump-official" onclick="openInboxViewer('update')">
+                                <div class="inbox-card-avatar">
+                                    <div class="bump-avatar-large">B</div>
+                                    <i class="fas fa-check-circle verified-icon"></i>
+                                </div>
+                                <div class="inbox-card-content">
+                                    <div class="inbox-card-header">
+                                        <span class="inbox-card-sender">Bump Updates</span>
+                                        <span class="inbox-card-time">Dec 22</span>
+                                    </div>
+                                    <h3 class="inbox-card-subject">New Features Just Dropped! ✨</h3>
+                                    <p class="inbox-card-preview">Check out what's new in Bump v1.0...</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Tips Message -->
+                            <div class="inbox-message-card bump-official" onclick="openInboxViewer('tips')">
+                                <div class="inbox-card-avatar">
+                                    <div class="bump-avatar-large tips">
+                                        <i class="fas fa-lightbulb"></i>
+                                    </div>
+                                </div>
+                                <div class="inbox-card-content">
+                                    <div class="inbox-card-header">
+                                        <span class="inbox-card-sender">Bump Tips</span>
+                                        <span class="inbox-card-time">Yesterday</span>
+                                    </div>
+                                    <h3 class="inbox-card-subject">Unlock the full Bump experience 🔓</h3>
+                                    <p class="inbox-card-preview">Quick tips to get the most out of Bump...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="inbox-main-tab-content" id="main-inbox-requests">
+                        <div class="friend-requests-grid" id="main-friend-requests-list">
+                            <div class="empty-state-inline">
+                                <i class="fas fa-user-clock"></i>
+                                <p>No pending friend requests</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="inbox-main-tab-content" id="main-inbox-friends">
+                        <div class="friends-grid" id="main-friends-list">
+                            <div class="empty-state-inline">
+                                <i class="fas fa-user-friends"></i>
+                                <p>No friends yet</p>
+                                <button class="btn-primary-small" onclick="switchView('search')">Find Friends</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <h2 id="panel-fullname"></h2>
-                <p class="panel-username" id="panel-username"></p>
-                <span class="panel-status" id="panel-status"></span>
-                <div class="panel-bio" id="panel-bio"></div>
-                <div class="panel-actions">
-                    <button class="btn-primary" id="panel-message-btn">
-                        <i class="fas fa-comment"></i> Send Message
+            </div>
+
+            <!-- ========== PROFILE VIEW ========== -->
+            <div class="main-view" id="main-profile-view">
+                <div class="profile-main-content">
+                    <!-- Profile Banner -->
+                    <div class="profile-banner-section">
+                        <div class="profile-banner-bg"></div>
+                        <div class="profile-avatar-wrapper">
+                            <img id="main-profile-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default" alt="My Avatar">
+                            <button class="avatar-edit-btn" id="main-change-avatar-btn">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Profile Info Card -->
+                    <div class="profile-info-card">
+                        <div class="profile-name-section">
+                            <h1 id="main-profile-fullname">Display Name</h1>
+                            <span class="profile-wave-tag">~<span id="main-profile-wave-id">username</span></span>
+                        </div>
+                        
+                        <!-- Profile Bio -->
+                        <p class="profile-bio-text" id="main-profile-bio-display">No bio yet</p>
+                        
+                        <!-- Profile Stats - Simple -->
+                        <div class="profile-stats-simple">
+                            <div class="profile-stat-item">
+                                <span class="stat-number" id="profile-friends-count">0</span>
+                                <span class="stat-text">Friends</span>
+                            </div>
+                            <div class="profile-stat-divider"></div>
+                            <div class="profile-stat-item">
+                                <span class="stat-number" id="profile-member-since">-</span>
+                                <span class="stat-text">Joined</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Edit Profile Button -->
+                        <button class="btn-edit-profile-main" id="toggle-edit-profile-btn">
+                            <i class="fas fa-edit"></i> Edit Profile
+                        </button>
+                        
+                        <!-- Edit Profile Form (Hidden by default) -->
+                        <div class="profile-edit-section hidden" id="profile-edit-section">
+                            <div class="profile-form">
+                                <div class="form-field">
+                                    <label>Display Name</label>
+                                    <input type="text" id="main-edit-fullname" class="form-input-styled">
+                                </div>
+                                <div class="form-field">
+                                    <label>Username</label>
+                                    <input type="text" id="main-edit-username" class="form-input-styled" disabled>
+                                </div>
+                                <div class="form-field">
+                                    <label>Email</label>
+                                    <input type="email" id="main-edit-email" class="form-input-styled">
+                                </div>
+                                <div class="form-field">
+                                    <label>Bio</label>
+                                    <textarea id="main-edit-bio" class="form-textarea-styled" placeholder="Tell us about yourself..."></textarea>
+                                </div>
+                                <div class="form-field">
+                                    <label>Status</label>
+                                    <select id="main-edit-status" class="form-select-styled">
+                                        <option value="online">🟢 Online</option>
+                                        <option value="away">🟡 Away</option>
+                                        <option value="busy">🔴 Busy</option>
+                                        <option value="offline">⚫ Invisible</option>
+                                    </select>
+                                </div>
+                                <div class="profile-edit-buttons">
+                                    <button class="btn-cancel-edit" id="cancel-edit-profile-btn">Cancel</button>
+                                    <button class="btn-save-profile" id="main-save-profile-btn">
+                                        <i class="fas fa-save"></i> Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== SETTINGS VIEW ========== -->
+            <div class="main-view" id="main-settings-view">
+                <!-- Mobile Settings Tabs -->
+                <div class="settings-mobile-tabs">
+                    <button class="settings-mobile-tab active" onclick="switchMainSettingsTab('account')">
+                        <i class="fas fa-user"></i>
+                        <span>Account</span>
+                    </button>
+                    <button class="settings-mobile-tab" onclick="switchMainSettingsTab('profile')">
+                        <i class="fas fa-id-card"></i>
+                        <span>Profile</span>
+                    </button>
+                    <button class="settings-mobile-tab" onclick="switchMainSettingsTab('privacy')">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Privacy</span>
+                    </button>
+                    <button class="settings-mobile-tab" onclick="switchMainSettingsTab('appearance')">
+                        <i class="fas fa-palette"></i>
+                        <span>Theme</span>
+                    </button>
+                    <button class="settings-mobile-tab" onclick="switchMainSettingsTab('notifications')">
+                        <i class="fas fa-bell"></i>
+                        <span>Sounds</span>
+                    </button>
+                    <button class="settings-mobile-tab danger" onclick="handleLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
                     </button>
                 </div>
-                <div class="panel-info">
-                    <div class="info-item">
-                        <i class="fas fa-envelope"></i>
-                        <span id="panel-email"></span>
+                
+                <div class="settings-content-only">
+                    <!-- Account Tab -->
+                    <div class="settings-main-tab active" id="settings-main-account">
+                        <h2>My Account</h2>
+                        <div class="settings-card-main">
+                            <div class="account-banner-card"></div>
+                            <div class="account-card-info">
+                                <img id="settings-account-avatar" src="" alt="" class="account-card-avatar">
+                                <div class="account-card-details">
+                                    <h3 id="settings-account-name">Username</h3>
+                                    <span class="account-card-wave" id="settings-account-wave">~username</span>
+                                </div>
+                                <button class="btn-edit-avatar" onclick="document.getElementById('avatar-picker-modal').classList.remove('hidden')">
+                                    Edit Avatar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card-main">
+                            <div class="settings-field-row">
+                                <label>USERNAME</label>
+                                <span id="settings-account-username-display">username</span>
+                            </div>
+                            <div class="settings-field-row">
+                                <label>EMAIL</label>
+                                <span id="settings-account-email-display">email@example.com</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="info-item">
-                        <i class="fas fa-calendar"></i>
-                        <span id="panel-joined"></span>
+                    
+                    <!-- Profile Tab -->
+                    <div class="settings-main-tab" id="settings-main-profile">
+                        <h2>Profile</h2>
+                        <div class="settings-card-main">
+                            <div class="settings-form-field">
+                                <label>DISPLAY NAME</label>
+                                <input type="text" id="settings-main-display-name" class="settings-form-input" placeholder="How others see you">
+                            </div>
+                            <div class="settings-form-field">
+                                <label>ABOUT ME</label>
+                                <textarea id="settings-main-about" class="settings-form-textarea" placeholder="Tell us about yourself..." maxlength="200"></textarea>
+                                <span class="settings-char-count"><span id="settings-about-char-count">0</span>/200</span>
+                            </div>
+                            <button class="btn-save-settings" onclick="saveSettingsMainProfile()">Save Changes</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Privacy Tab -->
+                    <div class="settings-main-tab" id="settings-main-privacy">
+                        <h2>Privacy & Safety</h2>
+                        <div class="settings-card-main">
+                            <div class="settings-toggle-row">
+                                <div class="settings-toggle-label">
+                                    <span>Show Online Status</span>
+                                    <p>Let others see when you're online</p>
+                                </div>
+                                <label class="toggle-switch-main">
+                                    <input type="checkbox" id="settings-main-online-status" checked>
+                                    <span class="toggle-slider-main"></span>
+                                </label>
+                            </div>
+                            <div class="settings-toggle-row">
+                                <div class="settings-toggle-label">
+                                    <span>Read Receipts</span>
+                                    <p>Show when you've read messages</p>
+                                </div>
+                                <label class="toggle-switch-main">
+                                    <input type="checkbox" id="settings-main-read-receipts" checked>
+                                    <span class="toggle-slider-main"></span>
+                                </label>
+                            </div>
+                            <div class="settings-toggle-row">
+                                <div class="settings-toggle-label">
+                                    <span>Allow Friend Requests</span>
+                                    <p>Let others send you friend requests</p>
+                                </div>
+                                <label class="toggle-switch-main">
+                                    <input type="checkbox" id="settings-main-friend-requests" checked>
+                                    <span class="toggle-slider-main"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Appearance Tab -->
+                    <div class="settings-main-tab" id="settings-main-appearance">
+                        <h2>Appearance</h2>
+                        
+                        <!-- Chat Preview -->
+                        <div class="appearance-preview-card">
+                            <div class="preview-msg received">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=demo" alt="" class="preview-msg-avatar">
+                                <div class="preview-msg-content">
+                                    <span class="preview-msg-name">BumpUser <span class="preview-msg-tag">~BM</span> <span class="preview-msg-time">Today at 4:21 PM</span></span>
+                                    <p>Look at this cool new theme! 🎨</p>
+                                </div>
+                            </div>
+                            <div class="preview-msg sent">
+                                <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=you" alt="" class="preview-msg-avatar">
+                                <div class="preview-msg-content">
+                                    <span class="preview-msg-name">You <span class="preview-msg-tag">~BM</span> <span class="preview-msg-time">Today at 4:22 PM</span></span>
+                                    <p>Awesome! I love how it looks! ✨</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card-main">
+                            <h3>Theme</h3>
+                            <p class="settings-card-desc">Choose your preferred color scheme</p>
+                            <div class="theme-options-grid">
+                                <button class="theme-option-btn" data-theme="light">
+                                    <div class="theme-swatch-preview light"></div>
+                                    <span>Light</span>
+                                </button>
+                                <button class="theme-option-btn active" data-theme="dark">
+                                    <div class="theme-swatch-preview dark"></div>
+                                    <span>Dark</span>
+                                </button>
+                                <button class="theme-option-btn" data-theme="midnight">
+                                    <div class="theme-swatch-preview midnight"></div>
+                                    <span>Midnight</span>
+                                </button>
+                                <button class="theme-option-btn" data-theme="amoled">
+                                    <div class="theme-swatch-preview amoled"></div>
+                                    <span>AMOLED</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card-main">
+                            <h3>Accent Color</h3>
+                            <p class="settings-card-desc">Personalize your Bump experience</p>
+                            <div class="accent-colors-grid">
+                                <button class="accent-color-btn active" data-accent="#6366F1" style="background: #6366F1;"></button>
+                                <button class="accent-color-btn" data-accent="#8B5CF6" style="background: #8B5CF6;"></button>
+                                <button class="accent-color-btn" data-accent="#EC4899" style="background: #EC4899;"></button>
+                                <button class="accent-color-btn" data-accent="#EF4444" style="background: #EF4444;"></button>
+                                <button class="accent-color-btn" data-accent="#F59E0B" style="background: #F59E0B;"></button>
+                                <button class="accent-color-btn" data-accent="#10B981" style="background: #10B981;"></button>
+                                <button class="accent-color-btn" data-accent="#06B6D4" style="background: #06B6D4;"></button>
+                                <button class="accent-color-btn" data-accent="#3B82F6" style="background: #3B82F6;"></button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notifications Tab -->
+                    <div class="settings-main-tab" id="settings-main-notifications">
+                        <h2>Notifications</h2>
+                        <div class="settings-card-main">
+                            <div class="settings-toggle-row">
+                                <div class="settings-toggle-label">
+                                    <span>Push Notifications</span>
+                                    <p>Get notified when you receive messages</p>
+                                </div>
+                                <label class="toggle-switch-main">
+                                    <input type="checkbox" id="settings-main-push" checked>
+                                    <span class="toggle-slider-main"></span>
+                                </label>
+                            </div>
+                            <div class="settings-toggle-row">
+                                <div class="settings-toggle-label">
+                                    <span>Message Sounds</span>
+                                    <p>Play a sound for new messages</p>
+                                </div>
+                                <label class="toggle-switch-main">
+                                    <input type="checkbox" id="settings-main-sound" checked>
+                                    <span class="toggle-slider-main"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card-main">
+                            <h3>Notification Sound</h3>
+                            <p class="settings-card-desc">Choose your notification sound</p>
+                            <div class="notification-sounds-grid">
+                                <button class="sound-option-btn active" data-sound="pop">
+                                    <i class="fas fa-volume-up"></i>
+                                    <span>Pop</span>
+                                </button>
+                                <button class="sound-option-btn" data-sound="ding">
+                                    <i class="fas fa-bell"></i>
+                                    <span>Ding</span>
+                                </button>
+                                <button class="sound-option-btn" data-sound="chime">
+                                    <i class="fas fa-music"></i>
+                                    <span>Chime</span>
+                                </button>
+                                <button class="sound-option-btn" data-sound="bubble">
+                                    <i class="fas fa-comment-dots"></i>
+                                    <span>Bubble</span>
+                                </button>
+                            </div>
+                            <button class="test-sound-btn" id="test-notification-sound">
+                                <i class="fas fa-play"></i> Test Sound
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Tab -->
+                    <div class="settings-main-tab" id="settings-main-chat">
+                        <h2>Chat</h2>
+                        <div class="settings-card-main">
+                            <div class="settings-form-field">
+                                <label>BUBBLE STYLE</label>
+                                <select id="settings-main-bubble-style" class="settings-form-select">
+                                    <option value="classic">💬 Classic</option>
+                                    <option value="bump">✨ Bump Style</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- About Tab -->
+                    <div class="settings-main-tab" id="settings-main-about">
+                        <h2>About Bump</h2>
+                        <div class="settings-card-main about-card-main">
+                            <div class="about-logo-section">
+                                <span class="about-logo-text-main">Bump</span>
+                                <span class="about-version-tag">v1.0.0</span>
+                            </div>
+                            <p class="about-tagline-main">Connect instantly. Chat seamlessly.</p>
+                            <div class="about-links-row">
+                                <a href="https://github.com/Kirtannjoshi/bump" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+                                <a href="https://bump-ixlu.onrender.com" target="_blank"><i class="fas fa-globe"></i> Website</a>
+                                <a href="#" onclick="showBugReportModal(); return false;"><i class="fas fa-bug"></i> Report Bug</a>
+                            </div>
+                            <p class="about-copyright-main">© 2025 Bump Chat. Made with 💜</p>
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- ========== SEARCH VIEW ========== -->
+            <div class="main-view" id="main-search-view">
+                <div class="search-main-content">
+                    <div class="search-main-header">
+                        <h1>Find Friends</h1>
+                        <p class="search-main-subtitle">Search for users to connect with</p>
+                    </div>
+                    <div class="search-main-input-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="main-user-search" placeholder="Search by username..." class="search-main-input">
+                    </div>
+                    <div class="search-results-grid" id="main-search-results">
+                        <!-- Search results will be dynamically added -->
+                        <div class="empty-state-inline">
+                            <i class="fas fa-user-friends"></i>
+                            <p>Start typing to search for users</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Profile Panel (Right Sidebar) - Discord Style -->
+        <aside class="profile-panel hidden" id="profile-panel">
+            <!-- Banner -->
+            <div class="panel-banner" id="panel-banner"></div>
+            
+            <!-- Close Button -->
+            <button class="panel-close-btn" id="close-panel-btn">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <!-- Avatar -->
+            <div class="panel-avatar-wrapper">
+                <img id="panel-avatar-img" src="" alt="User Avatar" class="panel-avatar">
+                <span class="panel-status-dot" id="panel-status-dot"></span>
+            </div>
+            
+            <!-- User Info Card -->
+            <div class="panel-card">
+                <div class="panel-identity">
+                    <h2 id="panel-fullname">Display Name</h2>
+                    <span class="panel-wave-tag">~<span id="panel-username">username</span></span>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="panel-quick-actions">
+                    <button class="panel-action-btn primary" id="panel-message-btn" title="Message">
+                        <i class="fas fa-comment"></i>
+                    </button>
+                    <button class="panel-action-btn success" id="panel-add-friend-btn" title="Add Friend">
+                        <i class="fas fa-user-plus"></i>
+                    </button>
+                    <button class="panel-action-btn" id="panel-more-btn" title="More">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                </div>
+                
+                <!-- Tabs -->
+                <div class="panel-tabs">
+                    <button class="panel-tab active" data-panel-tab="info">Info</button>
+                    <button class="panel-tab" data-panel-tab="mutual">Mutual</button>
+                </div>
+                
+                <!-- Info Tab -->
+                <div class="panel-tab-content active" id="panel-tab-info">
+                    <div class="panel-section">
+                        <h4>About Me</h4>
+                        <p id="panel-bio" class="panel-bio-text">No bio yet</p>
+                    </div>
+                    <div class="panel-section">
+                        <h4>Status</h4>
+                        <div class="panel-status-info">
+                            <span class="status-indicator" id="panel-status-indicator"></span>
+                            <span id="panel-status">Online</span>
+                        </div>
+                    </div>
+                    <div class="panel-section">
+                        <h4>Member Since</h4>
+                        <p id="panel-joined" class="panel-date"><i class="fas fa-calendar"></i> Jan 1, 2025</p>
+                    </div>
+                </div>
+                
+                <!-- Mutual Tab -->
+                <div class="panel-tab-content" id="panel-tab-mutual">
+                    <div class="panel-section">
+                        <h4>Mutual Friends</h4>
+                        <div class="panel-mutual-list" id="panel-mutual-friends">
+                            <p class="panel-empty">No mutual friends</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Footer Actions -->
+                <div class="panel-footer-actions">
+                    <button class="panel-footer-btn" id="panel-mute-btn">
+                        <i class="fas fa-bell-slash"></i>
+                        <span>Mute</span>
+                    </button>
+                    <button class="panel-footer-btn danger" id="panel-block-btn">
+                        <i class="fas fa-ban"></i>
+                        <span>Block</span>
+                    </button>
+                </div>
+                
+                <!-- View Full Profile Button -->
+                <button class="panel-full-profile-btn" id="panel-view-full-btn">
+                    <i class="fas fa-expand"></i> View Full Profile
+                </button>
             </div>
         </aside>
     </div>
@@ -911,6 +1364,421 @@
                 </button>
             </div>
             <button class="delete-modal-cancel" id="delete-cancel-btn">Cancel</button>
+        </div>
+    </div>
+
+    <!-- User Profile Modal -->
+    <!-- Discord-style User Profile Modal -->
+    <div class="modal hidden" id="user-profile-modal">
+        <div class="discord-profile-modal">
+            <!-- Banner -->
+            <div class="discord-profile-banner" id="discord-profile-banner"></div>
+            
+            <!-- Close Button -->
+            <button class="discord-profile-close" id="close-user-profile-modal">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <!-- Avatar -->
+            <div class="discord-profile-avatar-wrapper">
+                <img id="user-profile-avatar-img" src="" alt="User Avatar" class="discord-profile-avatar">
+                <span class="discord-status-dot" id="user-profile-status-dot"></span>
+            </div>
+            
+            <!-- Profile Card -->
+            <div class="discord-profile-card">
+                <!-- Header with name and actions -->
+                <div class="discord-profile-header">
+                    <div class="discord-profile-identity">
+                        <h2 id="user-profile-name">Display Name</h2>
+                        <span class="discord-profile-tag"><span class="wave-prefix">~</span><span id="user-profile-username">username</span>:<span id="user-profile-discriminator">01</span></span>
+                    </div>
+                    <div class="discord-profile-quick-actions">
+                        <button class="discord-action-btn primary" id="send-message-btn" title="Send Message">
+                            <i class="fas fa-comment"></i>
+                        </button>
+                        <button class="discord-action-btn success" id="add-friend-btn" title="Add Friend">
+                            <i class="fas fa-user-plus"></i>
+                        </button>
+                        <button class="discord-action-btn secondary" id="more-actions-btn" title="More">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Tabs -->
+                <div class="discord-profile-tabs">
+                    <button class="discord-tab active" data-tab="user-info">User Info</button>
+                    <button class="discord-tab" data-tab="mutual-friends">Mutual Friends</button>
+                    <button class="discord-tab" data-tab="activity">Activity</button>
+                </div>
+                
+                <!-- Tab Contents -->
+                <div class="discord-profile-tab-content active" id="tab-user-info">
+                    <!-- About Me -->
+                    <div class="discord-section">
+                        <h4>About Me</h4>
+                        <p id="user-profile-bio" class="discord-about-me">No bio yet</p>
+                    </div>
+                    
+                    <!-- Member Since -->
+                    <div class="discord-section">
+                        <h4>Bump Member Since</h4>
+                        <p class="discord-member-since" id="user-profile-joined">
+                            <i class="fas fa-calendar"></i>
+                            <span>Jan 1, 2025</span>
+                        </p>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="discord-section">
+                        <h4>Status</h4>
+                        <div class="discord-status" id="user-profile-current-status">
+                            <span class="status-indicator online"></span>
+                            <span id="user-profile-status-text">Online</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="discord-profile-tab-content" id="tab-mutual-friends">
+                    <div class="discord-section">
+                        <h4>Mutual Friends</h4>
+                        <div class="discord-mutual-list" id="mutual-friends-list">
+                            <p class="discord-empty-state">No mutual friends</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="discord-profile-tab-content" id="tab-activity">
+                    <div class="discord-section">
+                        <h4>Currently</h4>
+                        <div class="discord-activity" id="user-activity">
+                            <p class="discord-empty-state">Not doing anything right now</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Actions Bar -->
+                <div class="discord-profile-actions-bar">
+                    <button class="discord-full-action mute" id="mute-user-btn">
+                        <i class="fas fa-bell-slash"></i>
+                        <span>Mute Notifications</span>
+                    </button>
+                    <button class="discord-full-action block" id="block-user-btn">
+                        <i class="fas fa-ban"></i>
+                        <span>Block</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Account Confirmation Modal -->
+    <div class="modal hidden" id="delete-account-modal">
+        <div class="modal-content delete-account-modal-content">
+            <div class="modal-header danger-header">
+                <h3><i class="fas fa-exclamation-triangle"></i> Delete Account</h3>
+                <button class="btn-icon modal-close" id="close-delete-account-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body delete-account-body">
+                <div class="warning-icon">
+                    <i class="fas fa-user-slash"></i>
+                </div>
+                <h4>Are you absolutely sure?</h4>
+                <p>This action cannot be undone. This will permanently delete your account and remove all your data from our servers.</p>
+                <ul class="delete-consequences">
+                    <li><i class="fas fa-times-circle"></i> All your messages will be deleted</li>
+                    <li><i class="fas fa-times-circle"></i> Your friend connections will be removed</li>
+                    <li><i class="fas fa-times-circle"></i> Your profile will be permanently erased</li>
+                </ul>
+                <div class="confirm-delete-section">
+                    <label>Type your username to confirm:</label>
+                    <input type="text" id="confirm-delete-username" class="confirm-input" placeholder="Enter your username">
+                </div>
+                <div class="delete-account-actions">
+                    <button class="btn-secondary" id="cancel-delete-account">Cancel</button>
+                    <button class="btn-danger-confirm" id="confirm-delete-account" disabled>
+                        <i class="fas fa-trash-alt"></i> Delete My Account
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Discord-Style Full Page Settings (Standalone Overlay) -->
+    <div class="discord-settings-page hidden" id="discord-settings-page">
+        <!-- Left Navigation -->
+        <div class="settings-nav">
+            <div class="settings-nav-header">
+                <img id="settings-user-avatar" src="" alt="" class="settings-user-avatar">
+                <div class="settings-user-info">
+                    <span class="settings-user-name" id="settings-user-name">Username</span>
+                    <span class="settings-user-edit" onclick="closeDiscordSettings(); switchView('profile');">Edit Profile ✏️</span>
+                </div>
+            </div>
+            <div class="settings-nav-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search" id="settings-search-input">
+            </div>
+            
+            <div class="settings-nav-section">
+                <span class="settings-nav-title">USER SETTINGS</span>
+                <button class="settings-nav-item active" data-settings-tab="account">
+                    <i class="fas fa-user"></i> My Account
+                </button>
+                <button class="settings-nav-item" data-settings-tab="profile">
+                    <i class="fas fa-id-card"></i> Profile
+                </button>
+                <button class="settings-nav-item" data-settings-tab="privacy">
+                    <i class="fas fa-shield-alt"></i> Privacy & Safety
+                </button>
+            </div>
+            
+            <div class="settings-nav-section">
+                <span class="settings-nav-title">APP SETTINGS</span>
+                <button class="settings-nav-item" data-settings-tab="appearance">
+                    <i class="fas fa-palette"></i> Appearance
+                </button>
+                <button class="settings-nav-item" data-settings-tab="notifications">
+                    <i class="fas fa-bell"></i> Notifications
+                </button>
+                <button class="settings-nav-item" data-settings-tab="chat">
+                    <i class="fas fa-comment"></i> Chat
+                </button>
+            </div>
+            
+            <div class="settings-nav-section">
+                <span class="settings-nav-title">ABOUT</span>
+                <button class="settings-nav-item" data-settings-tab="about">
+                    <i class="fas fa-info-circle"></i> About Bump
+                </button>
+            </div>
+            
+            <div class="settings-nav-divider"></div>
+            
+            <button class="settings-nav-item danger" id="settings-logout-btn" onclick="handleLogout()">
+                <i class="fas fa-sign-out-alt"></i> Log Out
+            </button>
+            <button class="settings-nav-item danger" id="settings-delete-btn" onclick="document.getElementById('delete-account-modal').classList.remove('hidden')">
+                <i class="fas fa-trash"></i> Delete Account
+            </button>
+        </div>
+        
+        <!-- Right Content -->
+        <div class="settings-content">
+            <button class="settings-close-btn" onclick="closeDiscordSettings()">
+                <i class="fas fa-times"></i>
+                <span>ESC</span>
+            </button>
+            
+            <!-- Account Tab -->
+            <div class="settings-tab active" id="settings-tab-account">
+                <h2>My Account</h2>
+                <div class="settings-card account-card">
+                    <div class="account-banner"></div>
+                    <div class="account-info">
+                        <img id="account-avatar" src="" alt="" class="account-avatar">
+                        <div class="account-details">
+                            <h3 id="account-name">Username</h3>
+                            <span class="account-wave-id" id="account-wave-id">~username</span>
+                        </div>
+                        <button class="btn-edit" onclick="document.getElementById('avatar-picker-modal').classList.remove('hidden')">
+                            Edit Avatar
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="settings-card">
+                    <div class="settings-field">
+                        <label>USERNAME</label>
+                        <div class="settings-field-value">
+                            <span id="account-username-display">username</span>
+                        </div>
+                    </div>
+                    <div class="settings-field">
+                        <label>EMAIL</label>
+                        <div class="settings-field-value">
+                            <span id="account-email-display">email@example.com</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Profile Tab -->
+            <div class="settings-tab" id="settings-tab-profile">
+                <h2>Profile</h2>
+                <div class="settings-card">
+                    <div class="settings-field">
+                        <label>DISPLAY NAME</label>
+                        <input type="text" id="settings-display-name" class="settings-input" placeholder="How others see you">
+                    </div>
+                    <div class="settings-field">
+                        <label>ABOUT ME</label>
+                        <textarea id="settings-about" class="settings-textarea" placeholder="Tell us about yourself..." maxlength="200"></textarea>
+                        <span class="char-count"><span id="about-char-count">0</span>/200</span>
+                    </div>
+                    <button class="btn-save" onclick="saveSettingsProfile()">Save Changes</button>
+                </div>
+            </div>
+            
+            <!-- Privacy Tab -->
+            <div class="settings-tab" id="settings-tab-privacy">
+                <h2>Privacy & Safety</h2>
+                <div class="settings-card">
+                    <div class="settings-toggle-item">
+                        <div class="settings-toggle-info">
+                            <span>Show Online Status</span>
+                            <p>Let others see when you're online</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="privacy-online-status" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-toggle-item">
+                        <div class="settings-toggle-info">
+                            <span>Read Receipts</span>
+                            <p>Show when you've read messages</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="privacy-read-receipts" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-toggle-item">
+                        <div class="settings-toggle-info">
+                            <span>Allow Friend Requests</span>
+                            <p>Let others send you friend requests</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="privacy-friend-requests" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Appearance Tab -->
+            <div class="settings-tab" id="settings-tab-appearance">
+                <h2>Appearance</h2>
+                
+                <!-- Chat Preview -->
+                <div class="appearance-preview">
+                    <div class="preview-message received">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=demo" alt="" class="preview-avatar">
+                        <div class="preview-content">
+                            <span class="preview-name">BumpUser <span class="preview-tag">~BM</span> <span class="preview-time">Today at 4:21 PM</span></span>
+                            <p>Look at this cool new theme! 🎨</p>
+                        </div>
+                    </div>
+                    <div class="preview-message sent">
+                        <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=you" alt="" class="preview-avatar">
+                        <div class="preview-content">
+                            <span class="preview-name">You <span class="preview-tag">~BM</span> <span class="preview-time">Today at 4:22 PM</span></span>
+                            <p>Awesome! I love how it looks! ✨</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-card">
+                    <h3>Theme</h3>
+                    <p class="settings-card-desc">Choose your preferred color scheme</p>
+                    <div class="theme-grid">
+                        <button class="theme-option" data-theme="light">
+                            <div class="theme-swatch light"></div>
+                            <span>Light</span>
+                        </button>
+                        <button class="theme-option active" data-theme="dark">
+                            <div class="theme-swatch dark"></div>
+                            <span>Dark</span>
+                        </button>
+                        <button class="theme-option" data-theme="midnight">
+                            <div class="theme-swatch midnight"></div>
+                            <span>Midnight</span>
+                        </button>
+                        <button class="theme-option" data-theme="amoled">
+                            <div class="theme-swatch amoled"></div>
+                            <span>AMOLED</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="settings-card">
+                    <h3>Accent Color</h3>
+                    <p class="settings-card-desc">Personalize your Bump experience</p>
+                    <div class="accent-colors">
+                        <button class="accent-color active" data-accent="#6366F1" style="background: #6366F1;"></button>
+                        <button class="accent-color" data-accent="#8B5CF6" style="background: #8B5CF6;"></button>
+                        <button class="accent-color" data-accent="#EC4899" style="background: #EC4899;"></button>
+                        <button class="accent-color" data-accent="#EF4444" style="background: #EF4444;"></button>
+                        <button class="accent-color" data-accent="#F59E0B" style="background: #F59E0B;"></button>
+                        <button class="accent-color" data-accent="#10B981" style="background: #10B981;"></button>
+                        <button class="accent-color" data-accent="#06B6D4" style="background: #06B6D4;"></button>
+                        <button class="accent-color" data-accent="#3B82F6" style="background: #3B82F6;"></button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Notifications Tab -->
+            <div class="settings-tab" id="settings-tab-notifications">
+                <h2>Notifications</h2>
+                <div class="settings-card">
+                    <div class="settings-toggle-item">
+                        <div class="settings-toggle-info">
+                            <span>Push Notifications</span>
+                            <p>Get notified when you receive messages</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="notif-push" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="settings-toggle-item">
+                        <div class="settings-toggle-info">
+                            <span>Message Sounds</span>
+                            <p>Play a sound for new messages</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="notif-sound" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chat Tab -->
+            <div class="settings-tab" id="settings-tab-chat">
+                <h2>Chat</h2>
+                <div class="settings-card">
+                    <div class="settings-field">
+                        <label>BUBBLE STYLE</label>
+                        <select id="settings-bubble-style" class="settings-select">
+                            <option value="classic">💬 Classic</option>
+                            <option value="bump">✨ Bump Style</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- About Tab -->
+            <div class="settings-tab" id="settings-tab-about">
+                <h2>About Bump</h2>
+                <div class="settings-card about-card">
+                    <div class="about-logo">
+                        <span class="about-logo-text">Bump</span>
+                        <span class="about-version">v1.0.0</span>
+                    </div>
+                    <p class="about-tagline">Connect instantly. Chat seamlessly.</p>
+                    <div class="about-links">
+                        <a href="https://github.com/Kirtannjoshi/bump" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+                        <a href="https://bump-ixlu.onrender.com" target="_blank"><i class="fas fa-globe"></i> Website</a>
+                        <a href="#" onclick="showBugReportModal(); return false;"><i class="fas fa-bug"></i> Report Bug</a>
+                    </div>
+                    <p class="about-copyright">© 2025 Bump Chat. Made with 💜</p>
+                </div>
+            </div>
         </div>
     </div>
 
