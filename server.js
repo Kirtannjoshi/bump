@@ -113,6 +113,7 @@ function generateAvatar(seed, style = 'avataaars') {
 }
 
 function sanitizeUser(user) {
+    if (!user) return null;
     const { password, ...safeUser } = user;
     return safeUser;
 }
@@ -399,10 +400,13 @@ app.get('/api/friends/requests/:userId', (req, res) => {
     const requests = (db.friendRequests || []).filter(r => r.to === userId && r.status === 'pending');
     
     // Attach user info
-    const requestsWithUsers = requests.map(r => ({
-        ...r,
-        fromUser: sanitizeUser(db.users.find(u => u.id === r.from))
-    }));
+    const requestsWithUsers = requests.map(r => {
+        const fromUser = db.users.find(u => u.id === r.from);
+        return {
+            ...r,
+            fromUser: sanitizeUser(fromUser)
+        };
+    }).filter(r => r.fromUser !== null);
     
     res.json(requestsWithUsers);
 });
@@ -412,10 +416,13 @@ app.get('/api/friends/sent/:userId', (req, res) => {
     const userId = req.params.userId;
     const requests = (db.friendRequests || []).filter(r => r.from === userId && r.status === 'pending');
     
-    const requestsWithUsers = requests.map(r => ({
-        ...r,
-        toUser: sanitizeUser(db.users.find(u => u.id === r.to))
-    }));
+    const requestsWithUsers = requests.map(r => {
+        const toUser = db.users.find(u => u.id === r.to);
+        return {
+            ...r,
+            toUser: sanitizeUser(toUser)
+        };
+    }).filter(r => r.toUser !== null);
     
     res.json(requestsWithUsers);
 });
